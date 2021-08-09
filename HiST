@@ -28,7 +28,7 @@ def path_get():
     parser.add_argument("--top",type=int,
                         default=0,
                         help='Set the translocation pairs range, output the top n pairs boxes.(default:%(default)s). The smaller top, the fewer pairs out.')
-    parser.add_argument("--version",'-v',action='version',version='%(prog)s 1.0',
+    parser.add_argument("--version",'-v',action='version',version='%(prog)s 1.1',
                         help='Print version.')
     args = parser.parse_args()
     return args
