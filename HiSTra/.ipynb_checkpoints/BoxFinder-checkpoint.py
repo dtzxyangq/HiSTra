@@ -495,6 +495,9 @@ def TLplotandBEDproduce(path,name,dataset,no_pic_fg=False):
         if not no_pic_fg:
             deDocBed,combineBed,box,fig,fig2 = PlotBreakpoint(path,name,chr1,chr2)
             fig_path = os.path.join(result_path,name,'pic')
+            if not os.path.exists(fig_path):
+                os.makedirs(fig_path)
+                print(f'------- Create new pic path in folder {fig_path} ---')
             fig.savefig(os.path.join(fig_path,str(i)+'_Combine_chr'+chr1+'_chr'+chr2+'.png'),dpi=400,format='png')
 #             fig2.savefig(os.path.join(fig_path,str(i)+'_Combine_chr'+chr1+'_chr'+chr2+'_zoomin.png'),dpi=400,format='png')
         else:
