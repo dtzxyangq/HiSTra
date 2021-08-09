@@ -8,14 +8,15 @@
 import os,sys,io
 from setuptools import setup,find_packages
 
-VERSION = '1.0'
+VERSION = '1.1'
 
 tests_require= []
 install_requires = ['numpy', 
                     'scipy',
                     'pandas',
                     'matplotlib',
-                    'seaborn'
+                    'seaborn',
+                    'matplotlib_venn'
                    ]
 
 setup(name='HiSTra',
