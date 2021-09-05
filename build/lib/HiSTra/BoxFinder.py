@@ -226,15 +226,16 @@ def TL_section_deDoc(low,high,result):
                 tmp.append(i)
     if (np.mean(result[low])>np.mean(result[high])):
         high = low
-    if (tmp!=[] and np.mean(result[tmp])>np.mean(result[high])):
+    if (tmp!=[] and np.mean(result[tmp])>2*np.mean(result[high])):
         high = tmp    
+#     print(high)
     return high
 
 
 def deDoc2Bed(high,chr2,result,cutline,bins = 100000):
     df_peak = pd.DataFrame(columns=['chr_id','s','e','Above_95%cut'])
     p = 0
-    gap = 2
+    gap = 3
     df_peak.loc[0]=['chr'+chr2,high[0]*bins,high[0]*bins,'']
 
     for i in range(1,len(high)):
@@ -325,7 +326,7 @@ def SV_boxfinder(path,name,chr1,chr2,bins=100000):
     Bed_com_i = bedcombine(Bed_i_pick,start_i,end_i)
     Bed_com_j = bedcombine(Bed_j_pick,start_j,end_j)
     
-    box = pd.DataFrame(columns=['Pairs','chr1','s1','e1','chr2','s2','e2'])
+    box = pd.DataFrame(columns=['Pairs','chr1','s1','e1','chr2','s2','e2','Box_max','Box_percentile'])
     pairs = 'chr'+chr1+'_chr'+chr2
     i = 0
     for p in range(len(Bed_com_i)):
@@ -333,7 +334,9 @@ def SV_boxfinder(path,name,chr1,chr2,bins=100000):
             if (Bed_com_i.loc[p]['Above_95%cut'] == 'Yes' and Bed_com_j.loc[q]['Above_95%cut'] == 'Yes'):
                 sx, sy = int(Bed_com_j.loc[q]['s']),int(Bed_com_i.loc[p]['s'])
                 ex, ey = int(Bed_com_j.loc[q]['e']),int(Bed_com_i.loc[p]['e'])
-                box.loc[i] = [pairs,'chr'+chr1,sy,ey,'chr'+chr2,sx,ex]
+                Box_max = np.max(M[int(sy/bins):int(ey/bins)+1,int(sx/bins):int(ex/bins)+1])
+                Box_percetile = np.percentile(M[int(sy/bins):int(ey/bins)+1,int(sx/bins):int(ex/bins)+1],99)
+                box.loc[i] = [pairs,'chr'+chr1,sy,ey,'chr'+chr2,sx,ex,Box_max,Box_percetile ]
                 i = i + 1
     deDocBed = pd.concat([Bed_i_pick,Bed_j_pick],ignore_index=True)
     combineBed = pd.concat([Bed_com_i,Bed_com_j],ignore_index=True)
@@ -361,8 +364,12 @@ def PlotBreakpoint(path,name,chr1,chr2,bins=100000):
     result_i,batch_size_i = breakpoint(MMT)
 #     print('debug!!!!')
     percent_cut = 95
-    cutline_i = min(auc_cutline(result_i),np.percentile(result_i,percent_cut))
-    cutline_j = min(auc_cutline(result_j),np.percentile(result_j,percent_cut))
+#     cutline_i = min(auc_cutline(result_i),np.percentile(result_i,percent_cut))
+#     cutline_j = min(auc_cutline(result_j),np.percentile(result_j,percent_cut))
+    cutline_i = (auc_cutline(result_i)+np.percentile(result_i,percent_cut))/2.0
+    cutline_j = (auc_cutline(result_j)+np.percentile(result_j,percent_cut))/2.0
+
+
 #     print(cutline_i,cutline_j)
     ######## 粗略找breakpoint区域 ############
     start_i,end_i = TL_section_finder(result_i,cutline_i)
@@ -381,13 +388,14 @@ def PlotBreakpoint(path,name,chr1,chr2,bins=100000):
     Bed_i_pick.reset_index(drop=True,inplace=True)
     Bed_j_pick.reset_index(drop=True,inplace=True)
 
+
     ######## boxmerge ###############
     Bed_com_i = bedcombine(Bed_i_pick,start_i,end_i)
     Bed_com_j = bedcombine(Bed_j_pick,start_j,end_j)
     
     deDocBed = pd.concat([Bed_i_pick,Bed_j_pick],ignore_index=True)
     combineBed = pd.concat([Bed_com_i,Bed_com_j],ignore_index=True)
-    box = pd.DataFrame(columns=['Pairs','chr1','s1','e1','chr2','s2','e2'])
+    box = pd.DataFrame(columns=['Pairs','chr1','s1','e1','chr2','s2','e2','Box_max','Box_percentile'])
     pairs = 'chr'+chr1+'_chr'+chr2
     i = 0
     for p in range(len(Bed_com_i)):
@@ -395,16 +403,24 @@ def PlotBreakpoint(path,name,chr1,chr2,bins=100000):
             if (Bed_com_i.loc[p]['Above_95%cut'] == 'Yes' and Bed_com_j.loc[q]['Above_95%cut'] == 'Yes'):
                 sx, sy = int(Bed_com_j.loc[q]['s']),int(Bed_com_i.loc[p]['s'])
                 ex, ey = int(Bed_com_j.loc[q]['e']),int(Bed_com_i.loc[p]['e'])
-                box.loc[i] = [pairs,'chr'+chr1,sy,ey,'chr'+chr2,sx,ex]
+                Box_max = np.max(M[int(sy/bins):int(ey/bins)+1,int(sx/bins):int(ex/bins)+1])
+                Box_percetile = np.percentile(M[int(sy/bins):int(ey/bins)+1,int(sx/bins):int(ex/bins)+1],99)
+                box.loc[i] = [pairs,'chr'+chr1,sy,ey,'chr'+chr2,sx,ex,Box_max,Box_percetile ]
                 i = i + 1
     
     ######## Plot 染色体对大图准备 ###############
-    unit = 0.005
-    xSize = (chr_j+280)*unit
-    ySize = (chr_i+270)*unit
+    unit = 0.0035
+#     xSize = (chr_j+280)*unit
+#     ySize = (chr_i+270)*unit
+#     xSize = chr_j*1.2*unit
+#     ySize = chr_i*1.25*unit
+    xSize = 1500*1.2*unit
+    ySize = 1200*1.25*unit    
+#     print(chr_i,chr_j)
     plt.close('all')
     fig = plt.figure(figsize=(xSize, ySize))
-    gs = gridspec.GridSpec(3, 2, height_ratios=[200,chr_i,50],width_ratios=[chr_j,200])
+#     gs = gridspec.GridSpec(3, 2, height_ratios=[200,chr_i,50],width_ratios=[chr_j,200])
+    gs = gridspec.GridSpec(3, 2, height_ratios=[20,100,5],width_ratios=[10,2],wspace=0.32, hspace=0.24)
     
     
     ######## Plot chr2 breakpoint 波峰图概览 ##############
@@ -416,6 +432,7 @@ def PlotBreakpoint(path,name,chr1,chr2,bins=100000):
     plt.rcParams['ytick.direction'] = 'in'#将y轴的刻度方向设置向内
     plt.xlim([0, chr_j])
     plt.xticks(range(0, chr_j, tick_step))
+    ax0.set_xticklabels([])
     plt.yticks([0,0.5,1])
 
     ######## Plot chr1 breakpoint 波峰图概览 ##############
@@ -425,16 +442,27 @@ def PlotBreakpoint(path,name,chr1,chr2,bins=100000):
     ax3.plot(np.ones(chr_i)*cutline_i,range(0,chr_i),'--')
     ax3.set_ylim(bottom=chr_i, top=0)
     ax3.set_xlim(0,1)
+    ax3.set_yticklabels([])
     plt.yticks(range(0,chr_i,tick_step))
     plt.xticks([0,0.5,1])
+    for tick in ax3.get_xticklabels():
+        tick.set_rotation(90)    
 
     ######## Plot chr1-chr2 交互M heatmap ###############
     ax2 = plt.subplot(gs[2])
+    FONTSIZE = 16
     df_heat = df_newheat = pd.DataFrame(M,columns=[f'{i/10}M' for i in range(chr_j)],index=[f'{i/10}M' for i in range(chr_i)])
     heatplt = sns.heatmap(df_heat, linewidths=0, ax=ax2, cmap="Reds", annot=False, cbar= True, xticklabels=tick_step, yticklabels=tick_step, cbar_ax=plt.subplot(gs[4]),cbar_kws={"orientation": "horizontal"})
-    ax2.set_xlabel('chr'+chr2, fontsize=24)
-    ax2.set_ylabel('chr'+chr1, fontsize=24)
-    fig.tight_layout()
+    ax2.set_xlabel('chr'+chr2,fontsize=FONTSIZE)
+    ax2.set_ylabel('chr'+chr1,fontsize=FONTSIZE)
+#     ax2.tick_params(labelsize=FONTSIZE)
+    ax2.xaxis.set_ticks_position('top')
+    ax2.yaxis.set_ticks_position('right')
+    for tick in ax2.get_xticklabels():
+        tick.set_rotation(10)
+    for tick in ax2.get_yticklabels():
+        tick.set_rotation(360)  
+#     fig.tight_layout()
     
     ######## Plot TL deDoc 区域到波峰图 ################   
     ax3.plot(np.zeros(len(high_i)),high_i,'g.')
@@ -453,7 +481,13 @@ def PlotBreakpoint(path,name,chr1,chr2,bins=100000):
                 sx_min = np.min([sx_min,sx])
                 sy_min = np.min([sy_min,sy])
                 ex_max = np.max([ex_max,ex])
-                ey_max = np.max([ey_max,ey])    
+                ey_max = np.max([ey_max,ey])
+    box_percentile_cut = np.max(box['Box_percentile'])/2
+    for i in box.index:
+        if box.loc[i]['Box_percentile']>box_percentile_cut:
+            sx,ex,sy,ey = box.loc[i,'s2'],box.loc[i,'e2'],box.loc[i,'s1'],box.loc[i,'e1']
+            rect = patches.Rectangle([int(sx/bins),int(sy/bins)],int(ex/bins)-int(sx/bins),int(ey/bins)-int(sy/bins),ec='r',fill=False)
+            ax2.add_patch(rect)
     sx = np.max([0,sx_min-50])
     ex = np.min([ex_max+50,chr_j])
     sy = np.max([0,sy_min-50])
@@ -469,8 +503,8 @@ def PlotBreakpoint(path,name,chr1,chr2,bins=100000):
     df_newheat = pd.DataFrame(M[sy:ey,sx:ex],columns=[f'{i/10}M' for i in range(sx,ex)],index=[f'{i/10}M' for i in range(sy,ey)])
     heatplt_2 = sns.heatmap(df_newheat, linewidths=0, ax=ax_newheat, cmap="Reds", annot=False, cbar= False, xticklabels=50, yticklabels=20)
     ax_newheat.tick_params(labelsize=18)
-    ax_newheat.set_xlabel('chr'+chr2,fontsize=24)
-    ax_newheat.set_ylabel('chr'+chr1,fontsize=24)
+    ax_newheat.set_xlabel('chr'+chr2)
+    ax_newheat.set_ylabel('chr'+chr1)
     sx_zoom,sy_zoom,ex_zoom,ey_zoom = sx,sy,ex,ey
     for p in range(len(Bed_com_i)):
         for q in range(len(Bed_com_j)):
@@ -487,11 +521,12 @@ def TLplotandBEDproduce(path,name,dataset,no_pic_fg=False):
     deDocBed_all = pd.DataFrame()
     combineBed_all = pd.DataFrame()
     box_all = pd.DataFrame()
+    box_filter = pd.DataFrame()
     print(name,' SV chromosome pairs:',len(dataset))
     result_path = path.replace('Matrix_aligned','SV_result')
     for i in dataset.index:
         chr1,chr2 = str(dataset.loc[i]['Chr_i']),str(dataset.loc[i]['Chr_j'])
-        print(chr1,chr2)
+        print(i,chr1,chr2)
         if not no_pic_fg:
             deDocBed,combineBed,box,fig,fig2 = PlotBreakpoint(path,name,chr1,chr2)
             fig_path = os.path.join(result_path,name,'pic')
@@ -505,10 +540,20 @@ def TLplotandBEDproduce(path,name,dataset,no_pic_fg=False):
         deDocBed_all = pd.concat([deDocBed_all,deDocBed],ignore_index=True)
         combineBed_all = pd.concat([combineBed_all,combineBed],ignore_index=True)
         box_all = pd.concat([box_all,box],ignore_index=True)
+        if len(box)<=10:
+            box_filter = pd.concat([box_filter,box],ignore_index=True)
+        else:
+            box_filter_cut = np.max(box['Box_percentile'])/2
+            box_tmp = box[box.Box_percentile>box_filter_cut]
+            if len(box_tmp)<=18:
+                box_filter = pd.concat([box_filter,box_tmp],ignore_index=True)
+           
     
     deDocBed_all.to_csv(os.path.join(result_path,name,'SV_deDocBed_all.csv'),index=False)
     combineBed_all.to_csv(os.path.join(result_path,name,'SV_combineBed_all.csv'),index=False)
     box_all.to_csv(os.path.join(result_path,name,'SV_box_all.csv'),index=False)
+    box_filter.to_csv(os.path.join(result_path,name,'SV_box_filtered.csv'),index=False)
+    
         
 if __name__ == "__main__":
 #     path = '/media/qian/data_sdb4/projects/HiC_SV/HiC_translocation_test/Test/HiST_0.2_demo/Matrix_aligned/Test_GSE63525_K562_combined_30/100k'
@@ -517,14 +562,34 @@ if __name__ == "__main__":
 #     deDoc_matrix_in_path = deDoc_in_pre(path,Rao_K562_sort,0.1)
 #     deDoc_run(deDoc_path, deDoc_matrix_in_path)
     
-    path = '/media/qian/data_sdb4/projects/HiC_SV/HiC_translocation_test/Test/HiST_0.2_demo/Matrix_aligned'
+#     path = '/media/qian/data_sdb4/projects/HiC_SV/HiC_translocation_test/Test/HiST_0.2_demo/Matrix_aligned'
     deDoc_path = '/home/qian/software/deDoc/deDoc.jar'
-    sv_result_path = "/media/qian/data_sdb4/projects/HiC_SV/HiC_translocation_test/Test/HiST_0.2_demo/SV_result"
-    name_K562 = 'Test_GSE63525_K562_combined_30'
-    Rao_K562_sort = pd.read_csv("../Test/HiST_0.2_demo/SV_result/Test_GSE63525_K562_combined_30/Test_GSE63525_K562_combined_30_result_500k_sorted.csv")
+#     sv_result_path = "/media/qian/data_sdb4/projects/HiC_SV/HiC_translocation_test/Test/HiST_0.2_demo/SV_result"
+#     name_K562 = 'Test_GSE63525_K562_combined_30'
+#     Rao_K562_sort = pd.read_csv("../Test/HiST_0.2_demo/SV_result/Test_GSE63525_K562_combined_30/Test_GSE63525_K562_combined_30_result_500k_sorted.csv")
     
-    result_pick_len = deDoc_run(os.path.join(path,name_K562,'100k'), Rao_K562_sort, 0.4, deDoc_path)
-    TLplotandBEDproduce(path,name_K562,Rao_K562_sort[0:result_pick_len])
+    path = '/media/qian/data_sdb4/projects/Test_out/HiST/Matrix_aligned/'
+    sv_result_path = '/media/qian/data_sdb4/projects/Test_out/HiST/SV_result/'
+#     name_caki2 = 'Test_Dekker_Caki2'
+#     Dekker_caki2_sort = pd.read_csv("/media/qian/data_sdb4/projects/Test_out/HiST/SV_result/Test_Dekker_Caki2/Test_Dekker_Caki2_result_500k_sorted.csv")
+    
+#     result_pick_len = deDoc_run(os.path.join(path,name_K562,'100k'), Rao_K562_sort, 0.4, deDoc_path)
+#     TLplotandBEDproduce(path,name_K562,Rao_K562_sort[0:result_pick_len])
 #     df_peak_K562 = TLplotandBEDproduce(path,name_K562,Rao_K562_sort[0:result_pick_len])
+#     result_pick_len = deDoc_run(os.path.join(path,name_caki2,'100k'), Dekker_caki2_sort, 0.4, deDoc_path)
+#     TLplotandBEDproduce(path,name_caki2,Dekker_caki2_sort[0:3])
+#     Li_U266_sort = pd.read_csv("/media/qian/data_sdb4/projects/Test_out/HiST/SV_result/Li_U266_HindIII/Li_U266_HindIII_result_500k_sorted.csv")
+#     name_U266 = 'Li_U266_HindIII'
+#     TLplotandBEDproduce(path,name_U266,Li_U266_sort[14:15])
     
+#     path = '/media/qian/data_sdd/work_dir/TL_output/Matrix_aligned/'
+#     sv_result_path = '/media/qian/data_sdd/work_dir/TL_output/SV_result/'
+    
+#     BRD3179_sort = pd.read_csv("/media/qian/data_sdd/work_dir/TL_output/SV_result/Test_GSM3930259_BRD3179/Test_GSM3930259_BRD3179_result_500k_sorted.csv")
+#     name_BRD3179 = 'Test_GSM3930259_BRD3179'
+#     TLplotandBEDproduce(path,name_BRD3179,BRD3179_sort[0:10])
+
+    Dekker_Panc1_sort = pd.read_csv("/media/qian/data_sdb4/projects/Test_out/HiST/SV_result/Dekker_Panc1A/Dekker_Panc1A_result_500k_sorted.csv")
+    name_panc1 = 'Dekker_Panc1A'
+    TLplotandBEDproduce(path,name_panc1,Dekker_Panc1_sort[0:43])
                                        
