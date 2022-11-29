@@ -1,4 +1,5 @@
 # HiSTra
+# The new version is mantained at https://github.com/dtzxyangq/HiST
 
 ### Installation
 
