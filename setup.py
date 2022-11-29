@@ -19,14 +19,14 @@ install_requires = ['numpy',
                     'cooler'
                    ]
 
-setup(name='HiST',
+setup(name='HiSTra',
       version=VERSION,
       author="Q.Yang",
       author_email='dtzxyangq@foxmail.com',
       keywords='HiC genome structure variation translocation',
       description='Spectral translocation detection of HiC matrices.',
       license='MIT',
-      url='https://github.com/dtzxyangq/HiST',
+      url='https://github.com/dtzxyangq/HiSTra',
       classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

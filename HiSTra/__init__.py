@@ -1,4 +1,4 @@
-name = 'HiST'
+name = 'HiSTra'
 '''
 HiST: Spectral Translocation detection of HiC matrices.
 Quick start: HiST -t the_hicfile_contains_translocations -c the_hicfile_control_sample -o the_path_of_output -j the_path_juicer_tools -d the_path_deDoc 
