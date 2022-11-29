@@ -69,7 +69,10 @@ def downsample(test_path,control_path,k): #pandas 读入单个chri_chrj_100k.txt
     test_depth = 0
     control_depth = 0
     for filename in files:
+<<<<<<< HEAD
 #         print(filename)
+=======
+>>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
         test_M = pd.read_csv(os.path.join(test_path,filename),header=None,sep='\t')
         control_M = pd.read_csv(os.path.join(control_path,filename),header=None,sep='\t')
         test_depth += (sum(test_M[2]))

@@ -1,8 +1,8 @@
 Metadata-Version: 2.1
-Name: HiSTra
+Name: HiST
 Version: 1.2
 Summary: Spectral translocation detection of HiC matrices.
-Home-page: https://github.com/dtzxyangq/HiSTra
+Home-page: https://github.com/dtzxyangq/HiST
 Author: Q.Yang
 Author-email: dtzxyangq@foxmail.com
 License: MIT

@@ -17,7 +17,11 @@ from datetime import *
 from scipy import sparse
 
 from HiSTra.utils import *
+<<<<<<< HEAD
 from HiSTra.hicInput import hic2mat,cool2mat
+=======
+from HiSTra.hicInput import hic2mat
+>>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
 from HiSTra.SparseMatrixDeal import *
 from HiSTra.SignalFinder import *
 from HiSTra.BoxFinder import *
@@ -32,14 +36,21 @@ def precheck(prog_args):
 #     print(prog_args.baseline)
 #     print(prog_args.no_figure)
     if (not os.path.exists(juice_path)) or ('.jar' not in juice_path):
+<<<<<<< HEAD
         if (test_path.endswith('.hic') or control_path.endswith('.hic')):
             print('juice_path is set: ',juice_path)
             print("-------Error! Juicer tools are not found.---------")
             return False
+=======
+        print('juice_path is set: ',juice_path)
+        print("-------Error! Juicer tools are not found.---------")
+        return False
+>>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
     if (not os.path.exists(deDoc_path)) or ('.jar' not in deDoc_path):
         print('deDoc_path is set: ',deDoc_path)
         print("-------Error! deDoc.jar are not found.---------")
         return False
+<<<<<<< HEAD
     if (not os.path.exists(test_path)) or (not (test_path.endswith('.hic') or test_path.endswith('.mcool'))):
         print('test_path is set: ',test_path)
         print("-------Error! Test sample hicfile/coolfile are not found.---------")
@@ -47,6 +58,15 @@ def precheck(prog_args):
     if (not os.path.exists(control_path)) or (not(control_path.endswith('.hic') or control_path.endswith('.mcool'))):
         print('control_path is set: ',control_path)
         print("-------Error! Control sample hicfile/coolfile are not found.---------")
+=======
+    if (not os.path.exists(test_path)) or ('.hic' not in test_path):
+        print('test_path is set: ',test_path)
+        print("-------Error! Test sample hicfile are not found.---------")
+        return False
+    if (not os.path.exists(control_path)) or ('.hic' not in control_path):
+        print('control_path is set: ',control_path)
+        print("-------Error! Control sample hicfile are not found.---------")
+>>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
         return False
     return True
 
@@ -59,15 +79,22 @@ def run_main(prog_args):
         test_path=os.path.abspath(os.path.expanduser(prog_args.test))
         control_path=os.path.abspath(os.path.expanduser(prog_args.control))
         output_path=os.path.abspath(os.path.expanduser(prog_args.output))
+<<<<<<< HEAD
         if (test_path.endswith('.hic') or control_path.endswith('.hic')):
             juice_path=os.path.abspath(os.path.expanduser(prog_args.juice))
         deDoc_path=os.path.abspath(os.path.expanduser(prog_args.deDoc))
         if (test_path.endswith('.hic') or control_path.endswith('.hic')):
             print('juice_path is set: ',juice_path)
+=======
+        juice_path=os.path.abspath(os.path.expanduser(prog_args.juice))
+        deDoc_path=os.path.abspath(os.path.expanduser(prog_args.deDoc))
+        print('juice_path is set: ',juice_path)
+>>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
         print('deDoc_path is set: ',deDoc_path)
         print('output_path is set: ',output_path)
         print(f"------- Precheck Work finish. -------")
     # ------ Step 1 Dump matrix. -------
+<<<<<<< HEAD
     if test_path.endswith('.hic'):
         testDir_Mat_from_hic = hic2mat(test_path,output_path,juice_path)
     if test_path.endswith('.mcool'):
@@ -76,6 +103,10 @@ def run_main(prog_args):
         controlDir_Mat_from_hic = hic2mat(control_path,output_path,juice_path)
     if control_path.endswith('.mcool'):
         controlDir_Mat_from_hic = cool2mat(control_path,output_path)
+=======
+    testDir_Mat_from_hic = hic2mat(test_path,output_path,juice_path)
+    controlDir_Mat_from_hic = hic2mat(control_path,output_path,juice_path)
+>>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
     # ----- time consumed print -------
     end1 = datetime.now()
     print(f"------ Your test sample hicfile is dumpped in {testDir_Mat_from_hic}. ------")
@@ -105,8 +136,12 @@ def run_main(prog_args):
     path = os.path.dirname(testDir_mat_aligned)
     sample_name = os.path.basename(testDir_mat_aligned)
     if not (prog_args.top==0):
+<<<<<<< HEAD
 #         result_pick_len = min(result_pick_len,prog_args.top) #edit log 2021-11-17 to extend the --top parameter
         result_pick_len = prog_args.top
+=======
+        result_pick_len = min(result_pick_len,prog_args.top)
+>>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
     TLplotandBEDproduce(path,sample_name,sv_result_sort[0:result_pick_len],prog_args.no_figure)
     # ----- time consumed print -------
     end4 = datetime.now()

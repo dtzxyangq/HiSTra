@@ -239,24 +239,40 @@ def deDoc2Bed(high,chr2,result,cutline,bins = 100000):
     df_peak.loc[0]=['chr'+chr2,high[0]*bins,high[0]*bins,'']
 
     for i in range(1,len(high)):
+<<<<<<< HEAD
         pre = df_peak.loc[p,'e']
         now = high[i]*bins
         if now-pre<=gap*bins:
             df_peak.loc[p,'e'] = now
+=======
+        pre = df_peak.loc[p]['e']
+        now = high[i]*bins
+        if now-pre<=gap*bins:
+            df_peak.loc[p]['e'] = now
+>>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
         else:
             p = p+1
             df_peak.loc[p] = ['chr'+chr2,now,now,'']
     for i in range(len(df_peak)):
+<<<<<<< HEAD
         s,e = int(df_peak.loc[i,'s']/bins),int(df_peak.loc[i,'e']/bins)
         if (np.max(result[s:e+1])>cutline):
             df_peak.loc[i,'Above_95%cut'] = 'Yes'
         else:
             df_peak.loc[i,'Above_95%cut'] = 'No'
+=======
+        s,e = int(df_peak.loc[i]['s']/bins),int(df_peak.loc[i]['e']/bins)
+        if (np.max(result[s:e+1])>cutline):
+            df_peak.loc[i]['Above_95%cut'] = 'Yes'
+        else:
+            df_peak.loc[i]['Above_95%cut'] = 'No'
+>>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
     return df_peak
 
 def bedcombine(bed,start,end,bins=100000):
     tmpbed = bed.copy(deep=True)
     for p in range(len(tmpbed)):
+<<<<<<< HEAD
         s,e = int(tmpbed.loc[p,'s']/bins),int(tmpbed.loc[p,'e']/bins)
         for q in range(len(start)):
             if (s<=start[q] and e<end[q] and e>=start[q]):
@@ -275,6 +291,26 @@ def bedcombine(bed,start,end,bins=100000):
             result.loc[p,'s'],result.loc[p,'e'] = s_tmp,e_tmp
         else:
             result.loc[p,'e'] = max(e_tmp,e)
+=======
+        s,e = int(tmpbed.loc[p]['s']/bins),int(tmpbed.loc[p]['e']/bins)
+        for q in range(len(start)):
+            if (s<=start[q] and e<end[q] and e>=start[q]):
+                tmpbed.loc[p]['e'] = int(end[q]*bins)
+            if (s>start[q] and e<end[q]):
+                tmpbed.loc[p]['s'],tmpbed.loc[p]['e'] = int(start[q]*bins),int(end[q]*bins)
+            if (s>=start[q] and e>=end[q] and s<=end[q]):
+                tmpbed.loc[p]['s'] = int(start[q]*bins)
+    result = tmpbed
+    p = 0
+    for i in range(1,len(tmpbed)):
+        s,e = int(result.loc[p]['s']),int(result.loc[p]['e'])
+        s_tmp,e_tmp = int(tmpbed.loc[i]['s']),int(tmpbed.loc[i]['e'])
+        if (e<s_tmp):
+            p = p + 1
+            result.loc[p]['s'],result.loc[p]['e'] = s_tmp,e_tmp
+        else:
+            result.loc[p]['e'] = max(e_tmp,e)
+>>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
     return result[0:p+1]
 
 def SV_boxfinder(path,name,chr1,chr2,bins=100000):
@@ -331,9 +367,15 @@ def SV_boxfinder(path,name,chr1,chr2,bins=100000):
     i = 0
     for p in range(len(Bed_com_i)):
         for q in range(len(Bed_com_j)):
+<<<<<<< HEAD
             if (Bed_com_i.loc[p,'Above_95%cut'] == 'Yes' and Bed_com_j.loc[q,'Above_95%cut'] == 'Yes'):
                 sx, sy = int(Bed_com_j.loc[q,'s']),int(Bed_com_i.loc[p,'s'])
                 ex, ey = int(Bed_com_j.loc[q,'e']),int(Bed_com_i.loc[p,'e'])
+=======
+            if (Bed_com_i.loc[p]['Above_95%cut'] == 'Yes' and Bed_com_j.loc[q]['Above_95%cut'] == 'Yes'):
+                sx, sy = int(Bed_com_j.loc[q]['s']),int(Bed_com_i.loc[p]['s'])
+                ex, ey = int(Bed_com_j.loc[q]['e']),int(Bed_com_i.loc[p]['e'])
+>>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
                 Box_max = np.max(M[int(sy/bins):int(ey/bins)+1,int(sx/bins):int(ex/bins)+1])
                 Box_percetile = np.percentile(M[int(sy/bins):int(ey/bins)+1,int(sx/bins):int(ex/bins)+1],99)
                 box.loc[i] = [pairs,'chr'+chr1,sy,ey,'chr'+chr2,sx,ex,Box_max,Box_percetile ]
@@ -400,9 +442,15 @@ def PlotBreakpoint(path,name,chr1,chr2,bins=100000):
     i = 0
     for p in range(len(Bed_com_i)):
         for q in range(len(Bed_com_j)):
+<<<<<<< HEAD
             if (Bed_com_i.loc[p,'Above_95%cut'] == 'Yes' and Bed_com_j.loc[q,'Above_95%cut'] == 'Yes'):
                 sx, sy = int(Bed_com_j.loc[q,'s']),int(Bed_com_i.loc[p,'s'])
                 ex, ey = int(Bed_com_j.loc[q,'e']),int(Bed_com_i.loc[p,'e'])
+=======
+            if (Bed_com_i.loc[p]['Above_95%cut'] == 'Yes' and Bed_com_j.loc[q]['Above_95%cut'] == 'Yes'):
+                sx, sy = int(Bed_com_j.loc[q]['s']),int(Bed_com_i.loc[p]['s'])
+                ex, ey = int(Bed_com_j.loc[q]['e']),int(Bed_com_i.loc[p]['e'])
+>>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
                 Box_max = np.max(M[int(sy/bins):int(ey/bins)+1,int(sx/bins):int(ex/bins)+1])
                 Box_percetile = np.percentile(M[int(sy/bins):int(ey/bins)+1,int(sx/bins):int(ex/bins)+1],99)
                 box.loc[i] = [pairs,'chr'+chr1,sy,ey,'chr'+chr2,sx,ex,Box_max,Box_percetile ]
@@ -473,9 +521,15 @@ def PlotBreakpoint(path,name,chr1,chr2,bins=100000):
     ex_max,ey_max = 0,0
     for p in range(len(Bed_com_i)):
         for q in range(len(Bed_com_j)):
+<<<<<<< HEAD
             if (Bed_com_i.loc[p,'Above_95%cut'] == 'Yes' and Bed_com_j.loc[q,'Above_95%cut'] == 'Yes'):
                 sx, sy = int(Bed_com_j.loc[q,'s']/bins),int(Bed_com_i.loc[p,'s']/bins)
                 ex, ey = int(Bed_com_j.loc[q,'e']/bins),int(Bed_com_i.loc[p,'e']/bins)
+=======
+            if (Bed_com_i.loc[p]['Above_95%cut'] == 'Yes' and Bed_com_j.loc[q]['Above_95%cut'] == 'Yes'):
+                sx, sy = int(Bed_com_j.loc[q]['s']/bins),int(Bed_com_i.loc[p]['s']/bins)
+                ex, ey = int(Bed_com_j.loc[q]['e']/bins),int(Bed_com_i.loc[p]['e']/bins)
+>>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
                 rect = patches.Rectangle([sx,sy],ex-sx,ey-sy,ec='g',fill=False)
                 ax2.add_patch(rect)
                 sx_min = np.min([sx_min,sx])
@@ -484,7 +538,11 @@ def PlotBreakpoint(path,name,chr1,chr2,bins=100000):
                 ey_max = np.max([ey_max,ey])
     box_percentile_cut = np.max(box['Box_percentile'])/2
     for i in box.index:
+<<<<<<< HEAD
         if box.loc[i,'Box_percentile']>box_percentile_cut:
+=======
+        if box.loc[i]['Box_percentile']>box_percentile_cut:
+>>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
             sx,ex,sy,ey = box.loc[i,'s2'],box.loc[i,'e2'],box.loc[i,'s1'],box.loc[i,'e1']
             rect = patches.Rectangle([int(sx/bins),int(sy/bins)],int(ex/bins)-int(sx/bins),int(ey/bins)-int(sy/bins),ec='r',fill=False)
             ax2.add_patch(rect)
@@ -498,6 +556,7 @@ def PlotBreakpoint(path,name,chr1,chr2,bins=100000):
     ######## Plot TL box zoom in ################ 
     xSize2 = 5*unit*(ex-sx)
     ySize2 = 5*unit*(ey-sy)
+<<<<<<< HEAD
     if (xSize2>0 and ySize2>0):
         fig2 = plt.figure(figsize=(xSize2,ySize2))
         ax_newheat = fig2.add_subplot(1,1,1)  
@@ -518,6 +577,26 @@ def PlotBreakpoint(path,name,chr1,chr2,bins=100000):
         fig2.tight_layout()
 #     return deDocBed,combineBed,box,fig,fig2
     return deDocBed,combineBed,box,fig
+=======
+    fig2 = plt.figure(figsize=(xSize2,ySize2))
+    ax_newheat = fig2.add_subplot(1,1,1)  
+    df_newheat = pd.DataFrame(M[sy:ey,sx:ex],columns=[f'{i/10}M' for i in range(sx,ex)],index=[f'{i/10}M' for i in range(sy,ey)])
+    heatplt_2 = sns.heatmap(df_newheat, linewidths=0, ax=ax_newheat, cmap="Reds", annot=False, cbar= False, xticklabels=50, yticklabels=20)
+    ax_newheat.tick_params(labelsize=18)
+    ax_newheat.set_xlabel('chr'+chr2)
+    ax_newheat.set_ylabel('chr'+chr1)
+    sx_zoom,sy_zoom,ex_zoom,ey_zoom = sx,sy,ex,ey
+    for p in range(len(Bed_com_i)):
+        for q in range(len(Bed_com_j)):
+            if (Bed_com_i.loc[p]['Above_95%cut'] == 'Yes' and Bed_com_j.loc[q]['Above_95%cut'] == 'Yes'):
+                sx, sy = int(Bed_com_j.loc[q]['s']/bins),int(Bed_com_i.loc[p]['s']/bins)
+                ex, ey = int(Bed_com_j.loc[q]['e']/bins),int(Bed_com_i.loc[p]['e']/bins)
+                rect = patches.Rectangle([sx-sx_zoom,sy-sy_zoom],ex-sx,ey-sy,ec='g',fill=False)
+                ax_newheat.add_patch(rect)
+    
+    fig2.tight_layout()
+    return deDocBed,combineBed,box,fig,fig2
+>>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
     
 def TLplotandBEDproduce(path,name,dataset,no_pic_fg=False):
     deDocBed_all = pd.DataFrame()
@@ -527,11 +606,18 @@ def TLplotandBEDproduce(path,name,dataset,no_pic_fg=False):
     print(name,' SV chromosome pairs:',len(dataset))
     result_path = path.replace('Matrix_aligned','SV_result')
     for i in dataset.index:
+<<<<<<< HEAD
         chr1,chr2 = str(dataset.loc[i,'Chr_i']),str(dataset.loc[i,'Chr_j'])
         print(i,chr1,chr2)
         if not no_pic_fg:
 #             deDocBed,combineBed,box,fig,fig2 = PlotBreakpoint(path,name,chr1,chr2)
             deDocBed,combineBed,box,fig = PlotBreakpoint(path,name,chr1,chr2)
+=======
+        chr1,chr2 = str(dataset.loc[i]['Chr_i']),str(dataset.loc[i]['Chr_j'])
+        print(i,chr1,chr2)
+        if not no_pic_fg:
+            deDocBed,combineBed,box,fig,fig2 = PlotBreakpoint(path,name,chr1,chr2)
+>>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
             fig_path = os.path.join(result_path,name,'pic')
             if not os.path.exists(fig_path):
                 os.makedirs(fig_path)

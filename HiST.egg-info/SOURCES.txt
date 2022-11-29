@@ -1,0 +1,16 @@
+LICENSE.txt
+README.md
+setup.py
+./HiST
+HiST.egg-info/PKG-INFO
+HiST.egg-info/SOURCES.txt
+HiST.egg-info/dependency_links.txt
+HiST.egg-info/requires.txt
+HiST.egg-info/top_level.txt
+HiSTra/BoxFinder.py
+HiSTra/SignalFinder.py
+HiSTra/SparseMatrixDeal.py
+HiSTra/__init__.py
+HiSTra/hicInput.py
+HiSTra/run_main.py
+HiSTra/utils.py

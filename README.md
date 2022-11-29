@@ -1,4 +1,5 @@
-# HiST
+# HiSTra
+
 
 ### Installation
 
@@ -7,7 +8,6 @@ Linux OS
 ```shell
 pip install HiSTra
 ```
-
 
 ### Preparation
 

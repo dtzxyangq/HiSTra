@@ -17,10 +17,17 @@ import numpy as np
 import pandas as pd
 import itertools
 
+<<<<<<< HEAD
 def check_pathname_valid(path):
     if path[-1]!='/':
         path = path + '/'
     return path
+=======
+# def check_pathname_valid(path):
+#     if path[-1]!='/':
+#         path = path + '/'
+#     return path
+>>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
 
 def chr_num_int_check(chr_i):
     if chr_i not in ['X','Y']:

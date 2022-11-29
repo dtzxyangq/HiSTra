@@ -19,7 +19,7 @@ install_requires = ['numpy',
                     'cooler'
                    ]
 
-setup(name='HiSTra',
+setup(name='HiST',
       version=VERSION,
       author="Q.Yang",
       author_email='dtzxyangq@foxmail.com',
