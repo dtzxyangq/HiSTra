@@ -66,7 +66,6 @@ def hic2mat(hicfile,matrix_path,juice_path):
             print(ret500k.stderr.read().decode('GBK'))
         if (b!=0):
             print(ret100k.stderr.read().decode('GBK'))
-
         
         if not os.path.exists(outdir500k+"/chr"+chri+"_chr"+chrj+R500):
             part1 = ' '.join([juice,'dump observed NONE',hicfile,'chr'+chri,'chr'+chrj,'BP 500000',outdir500k])

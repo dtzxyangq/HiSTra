@@ -8,10 +8,7 @@ Available functions:
 - path_get: From command line, reading all path inf.
 - usage: Print usage.
 - hic2mat: Dumping .hic file with juice_tool, and save them into the output path/Matrix_from_hic, return the path/Matrix_from_hic.
-<<<<<<< HEAD
 - cool2mat: Dumping .cool/.mcool file with cooler, and save them into the output path/Matrix_from_hic, return the path/Matrix_from_hic.
-=======
->>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
 """
 
 import sys
@@ -19,10 +16,7 @@ import getopt
 import argparse
 import os
 import itertools
-<<<<<<< HEAD
 import subprocess
-=======
->>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a
 
 def hic2mat(hicfile,matrix_path,juice_path):
     """Transfer the hic file to 276 matrix files.
@@ -63,7 +57,6 @@ def hic2mat(hicfile,matrix_path,juice_path):
         part1 = ' '.join([juice,'dump observed NONE',hicfile,chri,chrj,'BP 100000',outdir100k])
         part2 = "/chr"+chri+"_chr"+chrj+R100 + ' >>juicer_100k_log.txt 2>&1 &' 
         command_100k = part1 + part2
-<<<<<<< HEAD
 
         ret500k = subprocess.Popen(command_500k,stderr=subprocess.PIPE,shell=True)
         ret100k = subprocess.Popen(command_100k,stderr=subprocess.PIPE,shell=True)
@@ -73,7 +66,6 @@ def hic2mat(hicfile,matrix_path,juice_path):
             print(ret500k.stderr.read().decode('GBK'))
         if (b!=0):
             print(ret100k.stderr.read().decode('GBK'))
-
         
         if not os.path.exists(outdir500k+"/chr"+chri+"_chr"+chrj+R500):
             part1 = ' '.join([juice,'dump observed NONE',hicfile,'chr'+chri,'chr'+chrj,'BP 500000',outdir500k])
@@ -186,14 +178,3 @@ if __name__ == "__main__":
     print(cool2mat(input_control_path,output_path))
     
     
-=======
-        # print(command_100k)
-        os.system(command_500k)
-        os.system(command_100k)
-    print('You can check juicer_100k_log.txt and juicer_500k_log.txt in current directory if any error occurs.')
-            
-    return os.path.join(matrix_path,'Matrix_from_hic',fl)
-
-    part1 = ' '.join(juice,'dump observed NONE',hicfile,chri,chrj,'BP 500000',outdir500k)
-    part2 = "/chr"+chri+"_chr"+chrj+R500 + ' >>juicer_500k_log.txt 2>&1 &' 
->>>>>>> a97a934f9e406ff75b9d43c22148ff526368819a

@@ -17,7 +17,7 @@ numpy scipy pandas matplotlib matplotlib-venn seaborn cooler
 
 Download [juicer_tool](https://github.com/aidenlab/juicer/wiki/Juicer-Tools-Quick-Start) and [deDoc](https://github.com/yinxc/structural-information-minimisation).
 
-You can find relevant jar files in the repo/juice and repo/deDoc, respectively.
+You can find relevant jar files in the HiSTra/juice and HiSTra/deDoc, respectively.
 
 ### Directory tree
 
