@@ -8,6 +8,10 @@ Linux OS
 ```shell
 pip install HiSTra
 ```
+Dependency
+```shell
+numpy scipy pandas matplotlib matplotlib-venn seaborn cooler
+```
 
 ### Preparation
 
@@ -36,7 +40,9 @@ Finally, the directory tree is:
 │   ├── deDoc.jar
 ├── hic_input
 │   ├── Control_GSE63525_IMR90_combined_30.hic
-│   └── Test_GSE63525_K562_combined_30.hic
+│   ├── Test_GSE63525_K562_combined_30.hic
+│   ├── Control_GSE63525_IMR90_combined_30.mcool
+│   └── Test_GSE63525_K562_combined_30.mcool
 ├── juice
 │   ├── juicer_tools_2.09.00.jar
 └── TL_output
@@ -52,10 +58,17 @@ A trick here is the hicfile should contain 100k and 500k resolution matrix data.
 
 ```shell
 # Assume you are in the work_dir,a standard command is 
-HiST -t hic_input/Test_GSE63525_K562_combined_30.hic -c hic_input/Control_GSE63525_IMR90_combined_30.hic --baseline 0.2 -o TL_output/
+HiST -t hic_input/Test_GSE63525_K562_combined_30.hic -c hic_input/Control_GSE63525_IMR90_combined_30.hic -o TL_output/ -d deDoc/deDoc.jar -j juice/juicer_tools_2.09.00.jar
+# or
+HiST -t hic_input/Test_GSE63525_K562_combined_30.mcool -c hic_input/Control_GSE63525_IMR90_combined_30.mcool -o TL_output/ -d deDoc/deDoc.jar
 ```
 
 Then you can find the result in folder TL_output/SV_result.
+
+### FAQ
+1. If you meet "BlockingIOError: [Errno 11] Resource temporarily unavailable" or "error: too many open files"?
+Try command ```ulimit -u 381152```. Here 381152 could be replaced by any big number.
+
 
 
 
