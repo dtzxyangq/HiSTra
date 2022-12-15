@@ -64,7 +64,7 @@ HiST -t hic_input/Test_GSE63525_K562_combined_30.mcool -c hic_input/Control_GSE6
 ```
 
 Then you can find the result in folder TL_output/SV_result.
-An example of TL result with ![heatmap](./example_pic/0_Combine_chr1_chr7.png)
+An example of TL result with ![heatmap](https://gitee.com/dtzxyangq/HiSTra/blob/main/example_pic/0_Combine_chr1_chr7.png)
 
 ### FAQ
 1. If you meet "BlockingIOError: [Errno 11] Resource temporarily unavailable" or "error: too many open files"?
