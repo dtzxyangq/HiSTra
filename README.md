@@ -10,7 +10,7 @@ pip install HiSTra
 ```
 Dependency
 ```shell
-numpy scipy pandas matplotlib matplotlib-venn seaborn cooler
+numpy scipy pandas=1.3.5 matplotlib matplotlib-venn seaborn cooler=0.8.11
 ```
 
 ### Preparation
