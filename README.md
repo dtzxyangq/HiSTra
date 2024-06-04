@@ -10,14 +10,15 @@ pip install HiSTra
 ```
 Dependency
 ```shell
-numpy scipy pandas=1.3.5 matplotlib matplotlib-venn seaborn cooler=0.8.11
+conda create -n HiSTra python=3.8 
+conda install numpy scipy pandas=1.3.5 matplotlib seaborn h5py
+conda install -c conda-forge -c bioconda cooler=0.8.11
+pip install matplotlib-venn 
 ```
 
 ### Preparation
 
-Download [juicer_tool](https://github.com/aidenlab/juicer/wiki/Juicer-Tools-Quick-Start) and [deDoc](https://github.com/yinxc/structural-information-minimisation).
-
-You can find relevant jar files in the HiSTra/juice and HiSTra/deDoc, respectively.
+Download [juicer_tool](https://github.com/aidenlab/juicer/wiki/Juicer-Tools-Quick-Start) and [deDoc](https://github.com/yinxc/structural-information-minimisation). Because of the update of the two softwares, ***we recommend that you download them from this repo.*** You can find relevant jar files in the HiSTra/juice and HiSTra/deDoc, respectively.
 
 ### Directory tree
 
@@ -57,19 +58,27 @@ And you can choose the test sample and control sample by yourself.
 A trick here is the hicfile should contain 100k and 500k resolution matrix data.
 
 ```shell
-# Assume you are in the work_dir,a standard command is 
+# Assume you are in the work_dir,a standard command is for hic format file
 HiST -t hic_input/Test_GSE63525_K562_combined_30.hic -c hic_input/Control_GSE63525_IMR90_combined_30.hic -o TL_output/ -d deDoc/deDoc.jar -j juice/juicer_tools_2.09.00.jar
-# or
+# or mcool format file
 HiST -t hic_input/Test_GSE63525_K562_combined_30.mcool -c hic_input/Control_GSE63525_IMR90_combined_30.mcool -o TL_output/ -d deDoc/deDoc.jar
+# or mixed format file
+HiST -t hic_input/Test_GSE63525_K562_combined_30.mcool -c hic_input/Control_GSE63525_IMR90_combined_30.hic -o TL_output/ -d deDoc/deDoc.jar -j juice/juicer_tools_2.09.00.jar
+
 ```
 
 Then you can find the result in folder TL_output/SV_result.
 An example of TL result with ![heatmap](./example_pic/0_Combine_chr1_chr7.png)
 
 ### FAQ
-1. If you meet "BlockingIOError: [Errno 11] Resource temporarily unavailable" or "error: too many open files"?
-Try command ```ulimit -u 381152```. Here 381152 could be replaced by any big number.
+#### If you meet "Resource temporarily unavailable" or "error: too many open files" or "ValueError: cannot convert float NaN to integer" or "EmptyDataError: No columns to parse from file"?
 
+If your workstation is configured with more than 128 GB of memory and the number of threads is more than 48, you can try the following operations: 
+
+1. You can try command ```ulimit -u 381152``` . Here 381152 could be replaced by any big number.
+2. You only need to run HiST command a few more times. 
+
+These errors usually occur when the input data is mcool. We will fix them in the next version.
 
 
 
