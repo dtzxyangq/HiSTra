@@ -26,6 +26,7 @@ from HiSTra.BoxFinder import *
 def precheck(prog_args):
     test_path=os.path.abspath(os.path.expanduser(prog_args.test))
     control_path=os.path.abspath(os.path.expanduser(prog_args.control))
+    sizes_path=os.path.abspath(os.path.expanduser(prog_args.sizes))
     output_path=os.path.abspath(os.path.expanduser(prog_args.output))
     juice_path=os.path.abspath(os.path.expanduser(prog_args.juice))
     deDoc_path=os.path.abspath(os.path.expanduser(prog_args.deDoc))
@@ -48,6 +49,10 @@ def precheck(prog_args):
         print('control_path is set: ',control_path)
         print("-------Error! Control sample hicfile/coolfile are not found.---------")
         return False
+    if (not os.path.exists(sizes_path))):
+        print('sizes_path is set: ',sizes_path)
+        print("-------Error! Chromosome sizes are not found.---------")
+        return False
     return True
 
 def run_main(prog_args):
@@ -57,6 +62,7 @@ def run_main(prog_args):
         sys.exit()
     else:
         test_path=os.path.abspath(os.path.expanduser(prog_args.test))
+        sizes_path=os.path.abspath(os.path.expanduser(prog_args.sizes))
         control_path=os.path.abspath(os.path.expanduser(prog_args.control))
         output_path=os.path.abspath(os.path.expanduser(prog_args.output))
         if (test_path.endswith('.hic') or control_path.endswith('.hic')):

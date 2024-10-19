@@ -9,7 +9,7 @@ def path_get():
                                      formatter_class=argparse.RawTextHelpFormatter,
                                      epilog='''
  HiST: Spectral Translocation detection of HiC matrices.
- Quick start: HiST -t the_hicfile_contains_translocations -c the_hicfile_control_sample -o the_path_of_output -j the_path_juicer_tools -d the_path_deDoc                                     
+ Quick start: HiST -t the_hicfile_contains_translocations -c the_hicfile_control_sample -o the_path_of_output -j the_path_juicer_tools -d the_path_deDoc -s the_sizes_file_of_the_whole_choromosome  
  Control sample: could be normal cell lines or cancer neighbour tissue and so on, by yourself.                                     
  juicer_tools: recommand use the version which produces the .hic file in your experiment.                                     
  deDoc: please MUST use the version included in the HiST packages.
@@ -19,6 +19,9 @@ def path_get():
     parser.add_argument("--control",'-c',
                         default='./hic_default/GSE63525_IMR90_combined_30.hic', 
                         help='Please input control hic file (default: %(default)s).')
+    parser.add_argument("--sizes",'-s',required=True,
+                        default='./hic_default/hg19.sizes',
+                        help='Please input chromosome sizes file.')
     parser.add_argument("--output",'-o',
                         default='.', 
                         help='Set the output path (default: current work directory).')
