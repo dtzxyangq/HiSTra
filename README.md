@@ -20,6 +20,8 @@ pip install matplotlib-venn
 
 Download [juicer_tool](https://github.com/aidenlab/juicer/wiki/Juicer-Tools-Quick-Start) and [deDoc](https://github.com/yinxc/structural-information-minimisation). Because of the update of the two softwares, ***we recommend that you download them from this repo.*** You can find relevant jar files in the HiSTra/juice and HiSTra/deDoc, respectively.
 
+Make sure chromosome.sizes file is exactly the file used in generating test(and control) sample(.hic or .mcool). Or the error will occer at the early step.
+
 ### Directory tree
 
 A recommended work directory looks like:
