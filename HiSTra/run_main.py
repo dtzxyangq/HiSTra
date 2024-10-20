@@ -49,7 +49,7 @@ def precheck(prog_args):
         print('control_path is set: ',control_path)
         print("-------Error! Control sample hicfile/coolfile are not found.---------")
         return False
-    if (not os.path.exists(sizes_path))):
+    if (not os.path.exists(sizes_path)):
         print('sizes_path is set: ',sizes_path)
         print("-------Error! Chromosome sizes are not found.---------")
         return False
@@ -68,6 +68,7 @@ def run_main(prog_args):
         if (test_path.endswith('.hic') or control_path.endswith('.hic')):
             juice_path=os.path.abspath(os.path.expanduser(prog_args.juice))
         deDoc_path=os.path.abspath(os.path.expanduser(prog_args.deDoc))
+        sizes = pd.read_csv(sizes_path,sep='\t',header=None) # feature-yeast, add sizes file, which is required.
         if (test_path.endswith('.hic') or control_path.endswith('.hic')):
             print('juice_path is set: ',juice_path)
         print('deDoc_path is set: ',deDoc_path)
@@ -75,13 +76,13 @@ def run_main(prog_args):
         print(f"------- Precheck Work finish. -------")
     # ------ Step 1 Dump matrix. -------
     if test_path.endswith('.hic'):
-        testDir_Mat_from_hic = hic2mat(test_path,output_path,juice_path)
+        testDir_Mat_from_hic = hic2mat(test_path,output_path,juice_path,sizes)
     if test_path.endswith('.mcool'):
-        testDir_Mat_from_hic = cool2mat(test_path,output_path)
+        testDir_Mat_from_hic = cool2mat(test_path,output_path,sizes)
     if control_path.endswith('.hic'):
-        controlDir_Mat_from_hic = hic2mat(control_path,output_path,juice_path)
+        controlDir_Mat_from_hic = hic2mat(control_path,output_path,juice_path,sizes)
     if control_path.endswith('.mcool'):
-        controlDir_Mat_from_hic = cool2mat(control_path,output_path)
+        controlDir_Mat_from_hic = cool2mat(control_path,output_path,sizes)
     # ----- time consumed print -------
     end1 = datetime.now()
     print(f"------ Your test sample hicfile is dumpped in {testDir_Mat_from_hic}. ------")

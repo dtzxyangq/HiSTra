@@ -95,3 +95,39 @@ def sparsefiles(k):# k = 0/1, 对应两个分辨率 该函数生成了matrix*/ �
 def intra(name):
     name_split = name.split('/')[1].split('_')
     return name_split[0]==name_split[1]
+
+def sizes2chrname(sizes):
+    """ Transfer sizes file into chrname. Make all species available.
+    Input: pandas of sizes file;
+    Output: array like [chr1, chr2, chr3, ... , chrX](hg19).
+    """
+    chrname = [sizes[0][i] for i in range(len(sizes))]
+    return chrname
+
+def sizes2resUnit(sizes):
+    """ Transfer sizes file into resolution unit. Make all species available.
+    Input: pandas of sizes file;
+    Output: res_unit, e.g hg19 chromosome will be 100000(100k),yeast will be 1000(1k).
+    """
+    return int(pow(10,len(str(int(np.max(sizes[1])/10000)))))
+
+def num2res_sim(num):
+    """ Transfer a integer into string, to simplify the name of files.
+    Input: a integer, like 1000,100000;
+    Output: a string, like 1k,100k.
+    """
+    if (num/1000000>=1):
+        return str(int(num/1000000))+'M'
+    else:
+        if (num/1000>=1):
+            return str(int(num/1000))+'k'
+
+def chrname_pre(chrname_i):
+    """ Make sure chrname_prefix is 'chr'.
+    Input: string, like chr1,X;
+    Output:string, like '','chr'; to make sure the chrname be "chr1","chrX".
+    """
+    if chrname_i.startswith('chr'):
+        return ''
+    else:
+        return 'chr'
