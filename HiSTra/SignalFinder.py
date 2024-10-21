@@ -159,6 +159,7 @@ def evalue2TLpairs(result_path,test_sample_name,test_500k_evalue,control_500k_ev
         - result_path. The chromosome pairs are save in ../SV_result/test_sample_name/
     """ 
     chrname = sizes2chrname(sizes)
+    res_unit = sizes2resUnit(sizes)
     # compare相关性获得
     chr_pair_500k_df = compare_evalue(test_500k_evalue,control_500k_evalue,chrname) #获得单纯的相关性
     
@@ -175,8 +176,8 @@ def evalue2TLpairs(result_path,test_sample_name,test_500k_evalue,control_500k_ev
         print("------ Create new SV_result folder... ------")
     else:
         print("------ Corresponding SV_result folder exists. ------")
-    chr_pair_500k_df.to_csv(os.path.join(result_path,test_sample_name+"_result_500k.csv"),index=False)
-    chr_pair_500k_df_sort.to_csv(os.path.join(result_path,test_sample_name+"_result_500k_sorted.csv"),index=False)
+    chr_pair_500k_df.to_csv(os.path.join(result_path,test_sample_name+f"_result_{num2res_sim(res_unit*5)}.csv"),index=False)
+    chr_pair_500k_df_sort.to_csv(os.path.join(result_path,test_sample_name+f"_result_{num2res_sim(res_unit*5)}_sorted.csv"),index=False)
     return result_path
 
 
