@@ -76,11 +76,11 @@ def hic2mat(hicfile,matrix_path,juice_path,sizes):
         
         if not os.path.exists(outdir500k+f"/{chri_pre}"+chri+f"_{chrj_pre}"+chrj+R500):
             part1 = ' '.join([juice,'dump observed NONE',hicfile,f'{chri_pre}'+chri,f'{chrj_pre}'+chrj,f'BP {res_low}',outdir500k])
-            part2 = f"/{chri_pre}"+chri+f"_{chrj_pre}"+chrj+R500 + ' >>juicer_500k_log.txt 2>&1 &' 
+            part2 = f"/{chri_pre}"+chri+f"_{chrj_pre}"+chrj+R500 + f' >>juicer_{num2res_sim(res_low)}_log.txt 2>&1 &' 
             command_500k = part1 + part2
 
             part1 = ' '.join([juice,'dump observed NONE',hicfile,f'{chri_pre}'+chri,f'{chrj_pre}'+chrj,f'BP {res_high}',outdir100k])
-            part2 = f"/{chri_pre}"+chri+f"_{chrj_pre}"+chrj+R100 + ' >>juicer_100k_log.txt 2>&1 &' 
+            part2 = f"/{chri_pre}"+chri+f"_{chrj_pre}"+chrj+R100 + f' >>juicer_{num2res_sim(res_high)}_log.txt 2>&1 &' 
             command_100k = part1 + part2
 
             ret500k = subprocess.Popen(command_500k,stderr=subprocess.PIPE,shell=True)
