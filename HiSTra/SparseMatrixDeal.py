@@ -37,23 +37,24 @@ def linkmatrix(path):
     if not os.path.exists(destfile):
         os.system(command)
 
-def sparse_matrix_in(matrix_file,k): #pandas 读入单个chri_chrj_100k.txt/chri_chrj_500k.txt的函数块 输出一个np.array数组便于计算
+def sparse_matrix_in(matrix_file,k,res_unit): #pandas 读入单个chri_chrj_100k.txt/chri_chrj_500k.txt的函数块 输出一个np.array数组便于计算
     """Load a single matrix file, normally it is a txt within 3 columns without header, which are (pos_i,pos_j,counts).
         matrix_file: abspath of ../Matrix_from_hic/A_sample/*00k/chri_chrj_*00k.txt
         k: for resolution, 0 is 500k, 1 is 100k.
+        res_unit:the resolution adapted for the chromosome, e.g human 100k, yeast 1k.
     Return the corresponding numpy.array for calculation.
     """
     # file是sparse matrix完整路径名字
     # k是分辨率编号
     data = pd.read_csv(matrix_file,header=None,sep='\t')
-    res_value = [500000,100000]
+    res_value = [5*res_unit,res_unit]
     row = np.int64(data[0]/res_value[k])
     column = np.int64(data[1]/res_value[k])
     weight = np.float64(data[2])
     sp = sparse.coo_matrix((weight,(row,column)))
     return sp.toarray()
 
-def downsample(test_path,control_path,k): #pandas 读入单个chri_chrj_100k.txt/chri_chrj_500k.txt的函数块 输出一个np.array数组便于计算
+def downsample(test_path,control_path,k,sizes): #pandas 读入单个chri_chrj_100k.txt/chri_chrj_500k.txt的函数块 输出一个np.array数组便于计算
     """Load path of test and control sample and align their depth, create a new dir named Matrix_aligned. 
         test_path: ../matrix_from_hic/test_sample
         control_path: ../matrix_from_hic/control_sample
@@ -65,11 +66,11 @@ def downsample(test_path,control_path,k): #pandas 读入单个chri_chrj_100k.txt
     # k是分辨率编号
     test_path = os.path.abspath(test_path)
     control_path = os.path.abspath(control_path)
-    files = sparsefiles(k)
+    files = sparsefiles(k,sizes)
     test_depth = 0
     control_depth = 0
     for filename in files:
-#         print(filename)
+        # print(filename)
         test_M = pd.read_csv(os.path.join(test_path,filename),header=None,sep='\t')
         control_M = pd.read_csv(os.path.join(control_path,filename),header=None,sep='\t')
         test_depth += (sum(test_M[2]))
