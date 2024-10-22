@@ -90,31 +90,32 @@ def run_main(prog_args):
     print(f"--- Step 1 hic2matrix finish. Consuming {end1-start}. --- \n")
     
     #------- Step2 Align matrix depth. ------
-    ratio500k,testDir_mat_aligned,controlDir_mat_aligned = downsample(testDir_Mat_from_hic,controlDir_Mat_from_hic,0)
-    ratio100k,testDir_mat_aligned,controlDir_mat_aligned = downsample(testDir_Mat_from_hic,controlDir_Mat_from_hic,1)
+    ratio500k,testDir_mat_aligned,controlDir_mat_aligned = downsample(testDir_Mat_from_hic,controlDir_Mat_from_hic,0,sizes)
+    ratio100k,testDir_mat_aligned,controlDir_mat_aligned = downsample(testDir_Mat_from_hic,controlDir_Mat_from_hic,1,sizes)
     # ----- time consumed print -------
     end2 = datetime.now()
     print(f"------ The matrices are aligen in {testDir_mat_aligned} and {controlDir_mat_aligned}. ------ ")# for debug
     print(f"--- Step 2 finish. Matrices are aligned. Consuming {end2-end1} ---\n")    
     
     # ------- Step3 SV signal finder -----
-    SV_resultpath = signalFinder(output_path,testDir_mat_aligned,controlDir_mat_aligned)
+    SV_resultpath = signalFinder(output_path,testDir_mat_aligned,controlDir_mat_aligned,sizes)
     # ----- time consumed print -------
     end3 = datetime.now()
     print(f"------ Translocation score is saved in {SV_resultpath}")
     print(f"--- Step 3 finish. Raw translocation score are sorted. Consuming {end3-end2}. ---\n")
     
     # ------- Step4 SV box finder -----
+    res_unit = sizes2resUnit(sizes)
     for file in os.listdir(SV_resultpath):
         if fnmatch.fnmatch(file,'*sorted.csv'):
             sv_result_sort = pd.read_csv(os.path.join(SV_resultpath,file))
-    result_pick_len = deDoc_run(os.path.join(testDir_mat_aligned,'100k'), sv_result_sort, prog_args.baseline, deDoc_path)
+    result_pick_len = deDoc_run(os.path.join(testDir_mat_aligned,num2res_sim(res_unit)), sv_result_sort, prog_args.baseline, deDoc_path, res_unit)
     path = os.path.dirname(testDir_mat_aligned)
     sample_name = os.path.basename(testDir_mat_aligned)
     if not (prog_args.top==0):
 #         result_pick_len = min(result_pick_len,prog_args.top) #edit log 2021-11-17 to extend the --top parameter
         result_pick_len = prog_args.top
-    TLplotandBEDproduce(path,sample_name,sv_result_sort[0:result_pick_len],prog_args.no_figure)
+    TLplotandBEDproduce(path,sample_name,sv_result_sort[0:result_pick_len],res_unit,prog_args.no_figure)
     # ----- time consumed print -------
     end4 = datetime.now()
     print(f"------ Translocation boxes are saved in {SV_resultpath}")

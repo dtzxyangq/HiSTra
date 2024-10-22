@@ -57,39 +57,45 @@ def chr_pos2eigen_pos(i,j):# i j is chr_num, could be 1-22,X,Y; return x is the 
         jj = tmp
     return np.int64((46-ii)*(ii-1)/2+jj-ii-1)
 
-def eigen_pos2chr_pos(x): # x is the corresponding position in the eigenvalue list, eigenvector list. Return i j is chr_num, could be 1-22,'X','Y';
+def eigen_pos2chr_pos(x,eigen_pair_list): # x is the corresponding position in the eigenvalue list, eigenvector list. Return i j is chr_num, could be 1-22,'X','Y';
+    pair = eigen_pair_list[x]
+    chr_i = pair.split('--')[0]
+    chr_j = pair.split('--')[1]
+    return chr_i,chr_j
     # if not incluide intrachromosome, use 22,else use 23 and j=i+xx-1
-    x = x + 1
-    xx = x
-    tmp = 22
-    while (xx>tmp):
-        xx = xx - tmp
-        tmp = tmp - 1
-    i = 22-tmp+1
-    j = i+xx
-    if i>22:
-        chr_i = chr(i+65)
-    else:
-        chr_i = i
-    if j>22:
-        chr_j = chr(j+65)
-    else:
-        chr_j = j
-    return chr_i,chr_j       
+    # x = x + 1
+    # xx = x
+    # tmp = 22
+    # while (xx>tmp):
+    #     xx = xx - tmp
+    #     tmp = tmp - 1
+    # i = 22-tmp+1
+    # j = i+xx
+    # if i>22:
+    #     chr_i = chr(i+65)
+    # else:
+    #     chr_i = i
+    # if j>22:
+    #     chr_j = chr(j+65)
+    # else:
+    #     chr_j = j
+    # return chr_i,chr_j       
 
-def sparsefiles(k):# k = 0/1, 对应两个分辨率 该函数生成了matrix*/ 下的文件名，包含了一层文件路径
+def sparsefiles(k,sizes):# k = 0/1, 对应两个分辨率 该函数生成了matrix*/ 下的文件名，包含了一层文件路径
     """ Create a list of filenames.
-    Input: k for resolution, 0 is 500k, 1 is 100k.
+    Input: k for resolution, 0 is 500k, 1 is 100k; sizes for chromosome details, chrname and res_unit.
     Output: a list like ['*00k/chr1_chr2_*00k.txt']
     """
-    resolution = ["500k/","100k/"]
-    chrname=[str(i) for i in range(1,23)]
-    chrname.append("X")
-    R=["_500k.txt","_100k.txt"]
+    chrname = sizes2chrname(sizes)
+    res_unit = sizes2resUnit(sizes)
+    res_low = res_unit*5
+    res_high = res_unit
+    resolution = [f"{num2res_sim(res_low)}/",f"{num2res_sim(res_high)}/"]
+    R=[f"_{num2res_sim(res_low)}.txt",f"_{num2res_sim(res_high)}.txt"]
 
     sparse_files = []
     for chri,chrj in itertools.combinations_with_replacement(chrname,2):
-        sparse_files.append(resolution[k]+"chr"+chri+"_chr"+chrj+R[k])            
+        sparse_files.append(resolution[k]+f"{chrname_pre(chri)}"+chri+f"_{chrname_pre(chrj)}"+chrj+R[k])            
     return sparse_files
 
 def intra(name):

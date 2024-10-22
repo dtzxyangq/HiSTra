@@ -142,7 +142,7 @@ def breakpoint(MMT):
     Return:
         - a score list normalized in [0,1].
     """
-    batch_size = np.min([np.int64(MMT.shape[0]/100),10])
+    batch_size = np.max([1,np.min([np.int64(MMT.shape[0]/100),10])]) # 1<=batch_size<=10
     left = int(batch_size/2)
     right = batch_size-left
     result = np.zeros((MMT.shape[0],1))
@@ -353,7 +353,7 @@ def PlotBreakpoint(path,name,chr1,chr2,bins):
     """
 #     M = Sparse_in("/media/qian/data_sdb4/projects/Test_out/HiST/Matrix_aligned/"+name+"/100k/chr"+chr1+"_chr"+chr2+"_100k.txt",1)
     matrix_file_path = os.path.join(path,name,num2res_sim(bins),chrname_pre(chr1)+chr1+f"_{chrname_pre(chr2)}"+chr2+f"_{num2res_sim(bins)}.txt")
-    M = sparse_matrix_in(matrix_file_path, 1, res_unit)
+    M = sparse_matrix_in(matrix_file_path, 1, bins)
     cutoff = np.percentile(M,99.99,interpolation='nearest') #去掉特别大的值
     M[M>cutoff] = cutoff
     chr_i = M.shape[0]
@@ -406,7 +406,7 @@ def PlotBreakpoint(path,name,chr1,chr2,bins):
                 ex, ey = int(Bed_com_j.loc[q,'e']),int(Bed_com_i.loc[p,'e'])
                 Box_max = np.max(M[int(sy/bins):int(ey/bins)+1,int(sx/bins):int(ex/bins)+1])
                 Box_percetile = np.percentile(M[int(sy/bins):int(ey/bins)+1,int(sx/bins):int(ex/bins)+1],99)
-                box.loc[i] = [pairs,'chr'+chr1,sy,ey,'chr'+chr2,sx,ex,Box_max,Box_percetile ]
+                box.loc[i] = [pairs,chrname_pre(chr1)+chr1,sy,ey,chrname_pre(chr2)+chr2,sx,ex,Box_max,Box_percetile ]
                 i = i + 1
     
     ######## Plot 染色体对大图准备 ###############
