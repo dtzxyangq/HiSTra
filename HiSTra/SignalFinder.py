@@ -23,11 +23,10 @@ from datetime import *
 from scipy import sparse
 from random import sample
 
-
 from HiSTra.utils import *
 from HiSTra.SparseMatrixDeal import sparse_matrix_in
 
-def Eigen_calculation(path_in,k): 
+def Eigen_calculation(path_in,k,sizes): 
     """Calculate the eigenvalue list of all chromosome pairs of a sample.
     Input:
         - path_in, the dirpath like ../matrix_aligned/sample_name/.
@@ -36,20 +35,25 @@ def Eigen_calculation(path_in,k):
         - evalue_file_path, the abspath of a file, which is a numpy.array((253,500or2500)).
     """
     path_in = os.path.abspath(path_in)
-    interchr_num = 253
-    max_chrlen_list = [500,2500]
+    chrname = sizes2chrname(sizes)
+    res_unit = sizes2resUnit(sizes)
+    res_low = res_unit*5
+    res_high = res_unit
+    
+    interchr_num = int(len(chrname)*(len(chrname)-1)/2)
+    max_chrlen_list = [int(sizes.max()[1]/5/res_unit)+10,int(sizes.max()[1]/res_unit)+10]
     max_chrlen = max_chrlen_list[k]
     eigen_value_L = np.zeros((interchr_num,max_chrlen),dtype=float,order='C')
 
-    files_full = sparsefiles(k) # all files in dir ../matrix_aligned/sample_name/*00k/
+    files_full = sparsefiles(k,sizes) # all files in dir ../matrix_aligned/sample_name/*00k/
     files = []
     for filename in files_full:
         if not intra(filename):
             files.append(filename)
     
-    resolution = ["500k","100k"]
+    resolution = [f"{num2res_sim(res_low)}",f"{num2res_sim(res_high)}"]
     for p,filename in enumerate(files): # filename format is *00k/chr1_chr2_*.txt
-        M = sparse_matrix_in(os.path.join(path_in,filename), k) # float 乘法快！但是转化很慢。
+        M = sparse_matrix_in(os.path.join(path_in,filename), k, res_unit) # float 乘法快！但是转化很慢。
         cutoff = np.percentile(M,99.99,interpolation='nearest') #去掉特别大的值
         M[M>cutoff] = cutoff
         MMT = np.dot(M,M.T)
@@ -99,7 +103,7 @@ def Outlier(eigenvalue):
         return 0
     return sum(h)+number_Max  
     
-def compare_evalue(test_evalue,control_evalue):
+def compare_evalue(test_evalue,control_evalue,chrname):
     """Calculate the SV score between two eigenvalue lists.
     Input: eigenvalue list of test sample and control sample.
     Output: number of outliers, difference, pearson correlation expect outliers.
@@ -111,6 +115,10 @@ def compare_evalue(test_evalue,control_evalue):
     correlation_L = []
     if (test_evalue.shape!=control_evalue.shape):
         print('Error! Different shape between eigenvalue of test and control!')
+    eigen_pair_list = []
+    for chri,chrj in itertools.combinations(chrname,2):
+        eigen_pair_list.append('--'.join([chri,chrj]))
+        
     for k in range(test_evalue.shape[0]):
         eigen_c = abs(test_evalue[k,:])[abs(test_evalue[k,:])>0.1]
         eigen_n = abs(control_evalue[k,:])[abs(control_evalue[k,:])>0.1]
@@ -124,9 +132,10 @@ def compare_evalue(test_evalue,control_evalue):
         end_control = len(eigen_n_log)-Outlier_control
         Len_pick = max(min(end_test-len(eigen_c[eigen_c<10]), # choose at least 5 items, this part is exclude
                        end_control-len(eigen_n[eigen_n<10]))-10,5) # outliers and the start points.
+        chr_i,chr_j = eigen_pos2chr_pos(k,eigen_pair_list)
         
         r,p = st.pearsonr(eigen_c_log[end_test-Len_pick:end_test],eigen_n_log[end_control-Len_pick:end_control])
-        chr_i,chr_j = eigen_pos2chr_pos(k)        
+        # chr_i,chr_j = eigen_pos2chr_pos(k)        
         correlation_L.append([chr_i,chr_j,r,p,
                               np.mean(eigen_c_log[-1:]), np.mean(eigen_n_log[-1:]),
                               np.mean(eigen_c_log[-1:])-np.mean(eigen_n_log[-1:]),
@@ -140,7 +149,7 @@ def compare_evalue(test_evalue,control_evalue):
     correlation_df = pd.DataFrame(columns = column_name, data = correlation_L)
     return correlation_df      
 
-def evalue2TLpairs(result_path,test_sample_name,test_500k_evalue,control_500k_evalue):# for single sample, which means in the path should be contained only one npzfile of each resolution of the expected sample.
+def evalue2TLpairs(result_path,test_sample_name,test_500k_evalue,control_500k_evalue,sizes):# for single sample, which means in the path should be contained only one npzfile of each resolution of the expected sample.
     """Detect the chromosome pair in which TL occur.
     Input:
         - result_path, the output saving dirpath. User set it.
@@ -149,8 +158,10 @@ def evalue2TLpairs(result_path,test_sample_name,test_500k_evalue,control_500k_ev
     Output:
         - result_path. The chromosome pairs are save in ../SV_result/test_sample_name/
     """ 
+    chrname = sizes2chrname(sizes)
+    res_unit = sizes2resUnit(sizes)
     # compare相关性获得
-    chr_pair_500k_df = compare_evalue(test_500k_evalue,control_500k_evalue) #获得单纯的相关性
+    chr_pair_500k_df = compare_evalue(test_500k_evalue,control_500k_evalue,chrname) #获得单纯的相关性
     
     # compare结果排序and过滤
     chr_pair_500k_df_sort = chr_pair_500k_df.sort_values(by= ["Score","Outlier_difference","Correlation","AveEvalue_difference","Chr_i","Chr_j"],ascending = [False,False,True,False,True,True])
@@ -165,20 +176,20 @@ def evalue2TLpairs(result_path,test_sample_name,test_500k_evalue,control_500k_ev
         print("------ Create new SV_result folder... ------")
     else:
         print("------ Corresponding SV_result folder exists. ------")
-    chr_pair_500k_df.to_csv(os.path.join(result_path,test_sample_name+"_result_500k.csv"),index=False)
-    chr_pair_500k_df_sort.to_csv(os.path.join(result_path,test_sample_name+"_result_500k_sorted.csv"),index=False)
+    chr_pair_500k_df.to_csv(os.path.join(result_path,test_sample_name+f"_result_{num2res_sim(res_unit*5)}.csv"),index=False)
+    chr_pair_500k_df_sort.to_csv(os.path.join(result_path,test_sample_name+f"_result_{num2res_sim(res_unit*5)}_sorted.csv"),index=False)
     return result_path
 
 
-def signalFinder(result_path,test_matrix_path,control_matrix_path):
+def signalFinder(result_path,test_matrix_path,control_matrix_path,sizes):
     """Function which will be linked to main run script.
     Input user_set result path, and matrix_aligned/test_sample(control_sample),
     Return SV_result path like ../SV_result/test_sample_name/
     """
-    evalue_500k_test,evalue_500k_filepath_test = Eigen_calculation(test_matrix_path,0)
-    evalue_500k_control,evalue_500k_filepath_control = Eigen_calculation(control_matrix_path,0)
+    evalue_500k_test,evalue_500k_filepath_test = Eigen_calculation(test_matrix_path,0,sizes)
+    evalue_500k_control,evalue_500k_filepath_control = Eigen_calculation(control_matrix_path,0,sizes)
     test_sample_name = os.path.basename(test_matrix_path)
-    SV_resultpath = evalue2TLpairs(result_path,test_sample_name,evalue_500k_test,evalue_500k_control)
+    SV_resultpath = evalue2TLpairs(result_path,test_sample_name,evalue_500k_test,evalue_500k_control,sizes)
     return SV_resultpath
     
 if __name__ == "__main__":

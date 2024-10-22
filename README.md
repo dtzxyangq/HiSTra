@@ -20,7 +20,7 @@ pip install matplotlib-venn
 
 Download [juicer_tool](https://github.com/aidenlab/juicer/wiki/Juicer-Tools-Quick-Start) and [deDoc](https://github.com/yinxc/structural-information-minimisation). Because of the update of the two softwares, ***we recommend that you download them from this repo.*** You can find relevant jar files in the HiSTra/juice and HiSTra/deDoc, respectively.
 
-Make sure chromosome.sizes file is exactly the file used in generating test(and control) sample(.hic or .mcool). Or the error will occer at the early step.
+Make sure chromosome.sizes file is exactly the file used in generating test(and control) sample(.hic or .mcool). Or the error will occer at the early step. Make sure that no underscores('\_') is included in the chromosome name.
 
 ### Directory tree
 
@@ -53,23 +53,36 @@ Finally, the directory tree is:
 
 ### Example
 
+#### Samples
+
 You can download test case from GSE63525. The test sample [hicfile](https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE63525&format=file&file=GSE63525%5FK562%5Fcombined%5F30%2Ehic)  is K562 and control sample [hicfile](https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE63525&format=file&file=GSE63525%5FIMR90%5Fcombined%5F30%2Ehic) is IMR90.
 
 And you can choose the test sample and control sample by yourself.
 
-A trick here is the hicfile should contain 100k and 500k resolution matrix data.
+#### Resolution
+
+For samples of human, the hicfile should contain 100k and 500k resolution matrix data. In general, the appropriate resolution could be calculated as following:
+$$
+res_{unit} = 10^{len(max(chromosome_{size}))-4}.
+$$
+For example, in the hg.sizes the largest size of chromosome is **chr1(249250621)**, the suggested resolution unit would be 100k, and the lower one is defined as: 
+$$
+5\times res_{unit}.
+$$
+
+#### Command
 
 ```shell
 # Assume you are in the work_dir,a standard command is for hic format file
-HiST -t hic_input/Test_GSE63525_K562_combined_30.hic -c hic_input/Control_GSE63525_IMR90_combined_30.hic -o TL_output/ -d deDoc/deDoc.jar -j juice/juicer_tools_2.09.00.jar
+HiST -t hic_input/Test_GSE63525_K562_combined_30.hic -c hic_input/Control_GSE63525_IMR90_combined_30.hic -o TL_output/ -d deDoc/deDoc.jar -j juice/juicer_tools_2.09.00.jar -s sizes/chrom_hg19.sizes
 # or mcool format file
-HiST -t hic_input/Test_GSE63525_K562_combined_30.mcool -c hic_input/Control_GSE63525_IMR90_combined_30.mcool -o TL_output/ -d deDoc/deDoc.jar
+HiST -t hic_input/Test_GSE63525_K562_combined_30.mcool -c hic_input/Control_GSE63525_IMR90_combined_30.mcool -o TL_output/ -d deDoc/deDoc.jar -s sizes/chrom_hg19.sizes
 # or mixed format file
-HiST -t hic_input/Test_GSE63525_K562_combined_30.mcool -c hic_input/Control_GSE63525_IMR90_combined_30.hic -o TL_output/ -d deDoc/deDoc.jar -j juice/juicer_tools_2.09.00.jar
-
+HiST -t hic_input/Test_GSE63525_K562_combined_30.mcool -c hic_input/Control_GSE63525_IMR90_combined_30.hic -o TL_output/ -d deDoc/deDoc.jar -j juice/juicer_tools_2.09.00.jar -s sizes/chrom_hg19.sizes
+# Then you can find the result in folder TL_output/SV_result.
 ```
 
-Then you can find the result in folder TL_output/SV_result.
+#### Figure
 An example of TL result with ![heatmap](./example_pic/0_Combine_chr1_chr7.png)
 
 ### FAQ
