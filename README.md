@@ -2,20 +2,19 @@
 
 
 ### Installation
-
+Dependency
+```shell
+conda create -n HiSTra python=3.8 
+conda activate HiSTra
+conda install numpy scipy pandas=1.3.5 matplotlib seaborn h5py
+conda install -c conda-forge -c bioconda cooler=0.8.11
+pip install matplotlib-venn 
+```
 Linux OS
 
 ```shell
 pip install HiSTra
 ```
-Dependency
-```shell
-conda create -n HiSTra python=3.8 
-conda install numpy scipy pandas=1.3.5 matplotlib seaborn h5py
-conda install -c conda-forge -c bioconda cooler=0.8.11
-pip install matplotlib-venn 
-```
-
 ### Preparation
 
 Download [juicer_tool](https://github.com/aidenlab/juicer/wiki/Juicer-Tools-Quick-Start) and [deDoc](https://github.com/yinxc/structural-information-minimisation). Because of the update of the two softwares, ***we recommend that you download them from this repo.*** You can find relevant jar files in the HiSTra/juice and HiSTra/deDoc, respectively.
@@ -62,13 +61,10 @@ And you can choose the test sample and control sample by yourself.
 #### Resolution
 
 For samples of human, the hicfile should contain 100k and 500k resolution matrix data. In general, the appropriate resolution could be calculated as following:
-$$
+```math
 res_{unit} = 10^{len(max(chromosome_{size}))-4}.
-$$
-For example, in the hg.sizes the largest size of chromosome is **chr1(249250621)**, the suggested resolution unit would be 100k, and the lower one is defined as: 
-$$
-5\times res_{unit}.
-$$
+```
+For example, in the hg.sizes the largest size of chromosome is **chr1(249250621)**, the suggested resolution unit would be 100k, and the lower one is defined as: $`5\times res_{unit}.`$
 
 #### Command
 
