@@ -17,7 +17,7 @@ pip install HiSTra
 ```
 ### Preparation
 
-Download [juicer_tool](https://github.com/aidenlab/juicer/wiki/Juicer-Tools-Quick-Start) and [deDoc](https://github.com/yinxc/structural-information-minimisation). Because of the update of the two softwares, ***we recommend that you download them from this repo.*** You can find relevant jar files in the HiSTra/juice and HiSTra/deDoc, respectively.
+Download [juicer_tool](https://github.com/aidenlab/juicer/wiki/Juicer-Tools-Quick-Start) and [deDoc](https://github.com/yinxc/structural-information-minimisation). Because of the update of the two softwares, **we recommend that you download them from this repo.** You can find relevant jar files in the HiSTra/juice and HiSTra/deDoc, respectively.
 
 Make sure chromosome.sizes file is exactly the file used in generating test(and control) sample(.hic or .mcool). Or the error will occer at the early step. Make sure that no underscores('\_') is included in the chromosome name.
 
@@ -64,7 +64,10 @@ For samples of human, the hicfile should contain 100k and 500k resolution matrix
 ```math
 res_{unit} = 10^{len(max(chromosome_{size}))-4}.
 ```
-For example, in the hg.sizes the largest size of chromosome is **chr1(249250621)**, the suggested resolution unit would be 100k, and the lower one is defined as: $`5\times res_{unit}.`$
+For example, in the hg.sizes the largest size of chromosome is **chr1(249250621)**, the suggested resolution unit would be 100k, and the lower one is defined as: 
+```math
+5 \times res_{unit}.
+```
 
 #### Command
 
@@ -82,7 +85,7 @@ HiST -t hic_input/Test_GSE63525_K562_combined_30.mcool -c hic_input/Control_GSE6
 An example of TL result with ![heatmap](./example_pic/0_Combine_chr1_chr7.png)
 
 ### FAQ
-#### If you meet "Resource temporarily unavailable" or "error: too many open files" or "ValueError: cannot convert float NaN to integer" or "EmptyDataError: No columns to parse from file"?
+##### If you meet "Resource temporarily unavailable" or "error: too many open files" or "ValueError: cannot convert float NaN to integer" or "EmptyDataError: No columns to parse from file"?
 
 If your workstation is configured with more than 128 GB of memory and the number of threads is more than 48, you can try the following operations: 
 
@@ -91,7 +94,7 @@ If your workstation is configured with more than 128 GB of memory and the number
 
 These errors usually occur when the input data is mcool. We will fix them in the next version.
 
+##### If you meet "No such file or directory"...
 
-
-
-
+1. Check matrix_from_hic directory, if no files in sub-directory, check the juicer_log to find error or check cooler package.
+2. If juicer_log suggest like "invalid chromosome chr12", you should check the sizes file, a common problem is to tell "chr1" or "1".

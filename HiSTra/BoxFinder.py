@@ -187,7 +187,11 @@ def deDocResult(path,name,chr1,chr2,bins):
     res_unit = bins
     filepath = os.path.join(path,name,f'square_{num2res_sim(res_unit)}')
     filename = chr1+"_in_"+chr1+"_"+chr2+".txt.deDoc(E).uncontinuedTAD"
-    f = open(os.path.join(filepath,filename))
+    if (os.path.exists(os.path.join(filepath,filename))):
+        f = open(os.path.join(filepath,filename))
+    else:
+        filename = chr1+"_in_"+chr1+"_"+chr2+".txt.deDoc(M).uncontinuedTAD"
+        f = open(os.path.join(filepath,filename))
     high,low = [],[]
     line = f.readline()
     if line.strip()!='':
