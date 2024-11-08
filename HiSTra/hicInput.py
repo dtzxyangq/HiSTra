@@ -17,7 +17,10 @@ import argparse
 import os
 import itertools
 import subprocess
-from HiSTra.utils import sizes2chrname,sizes2resUnit,num2res_sim,chrname_pre
+import numpy as np
+import pandas as pd
+from scipy import sparse
+from HiSTra.utils import sizes2chrname,sizes2resUnit,num2res_sim,chrname_pre,sizes2bed
 
 def hic2mat(hicfile,matrix_path,juice_path,sizes):
     """Transfer the hic file to 276 matrix files.
@@ -182,6 +185,63 @@ def cool2mat(coolfile,matrix_path,sizes):
 
 #     part1 = ' '.join(juice,'dump observed NONE',hicfile,chri,chrj,'BP 500000',outdir500k)
 #     part2 = "/chr"+chri+"_chr"+chrj+R500 + ' >>juicer_500k_log.txt 2>&1 &' 
+
+def matrix2mat(cell_dir_path,matrix_path,sizes,normalization):
+    """
+    cell_dir_path: the cells you want to input, the format in the directory should be cell_dir_path/cell_id/normalization/resolution/**.matrix or **.bed
+    matrix_path: the TLOut directory we want to output the matrix_from_hic.
+    sizes: the species information, include the chromosome names and length; resolution will be calculated from length.
+    normalization: raw is suggested, but other normalizations are also supported. It is only used to point out the path. Default is raw.
+    """
+    cells = os.listdir(cell_dir_path)
+    print(f"The number of cells included: {len(cells)}.")
+    chrname = sizes2chrname(sizes)
+    res_unit = sizes2resUnit(sizes)
+    bed_df_low, bed_df_high = sizes2bed(sizes,5*res_unit), sizes2bed(sizes,res_unit)
+    size_low, size_high = len(bed_df_low)+1, len(bed_df_high)+1
+    cnt_low, cnt_high = 0, 0
+
+    for cell in cells:
+        ## 对每个cell进行操作
+        # 高分辨率100k
+        cell_path = os.path.join(cell_dir_path,cell,f"{normalization}/{res_unit}/")
+        size = size_high
+        for file in os.listdir(cell_path):
+            print(file,size)
+            if file.endswith(".matrix"):
+                matrix_file_path = os.path.join(cell_path,file)
+                data = pd.read_csv(matrix_file_path,header=None,sep='\t')
+                row = np.int64(data[0])
+                column = np.int64(data[1])
+                weight = np.float64(data[2])
+                if cnt_high == 0:
+                    sum_mat_high = sparse.coo_matrix((weight,(row,column)),shape=(size,size))
+                else:
+                    tmp_mat = sparse.coo_matrix((weight,(row,column)),shape=(size,size))
+                    sum_mat_high = sum_mat_high + tmp_mat
+                cnt_high = cnt_high + 1
+            # print(sum(sum_mat.toarray()))
+        # 低分辨率500k    
+        cell_path = os.path.join(cell_dir_path,cell,f"{normalization}/{5*res_unit}/")
+        size = size_low
+        for file in os.listdir(cell_path):
+            print(file,size)
+            if file.endswith(".matrix"):
+                matrix_file_path = os.path.join(cell_path,file)
+                data = pd.read_csv(matrix_file_path,header=None,sep='\t')
+                row = np.int64(data[0])
+                column = np.int64(data[1])
+                weight = np.float64(data[2])
+                if cnt_low == 0:
+                    # print(row,column)
+                    sum_mat_low = sparse.coo_matrix((weight,(row,column)),shape=(size,size))
+                else:
+                    tmp_mat = sparse.coo_matrix((weight,(row,column)),shape=(size,size))
+                    sum_mat_low = sum_mat_low + tmp_mat
+                cnt_low = cnt_low + 1
+            # print(sum(sum_mat.toarray()))
+    return sum_mat_low, sum_mat_high    
+    
     
 if __name__ == "__main__":
     input_test_path = "/media/qian/data_sdd/data_sdb4/project/Test_in/mcool/Rao_K562_hg19.mcool"

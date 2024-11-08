@@ -16,6 +16,7 @@ Available functions:
 import numpy as np
 import pandas as pd
 import itertools
+import os
 
 def check_pathname_valid(path):
     if path[-1]!='/':
@@ -137,3 +138,26 @@ def chrname_pre(chrname_i):
         return ''
     else:
         return 'chr'
+
+def sizes2bed(sizes,resolution):
+    """ Transfer sizes file into bed file. Make all species available.
+    Input: pandas of sizes file;
+    Output: pandas of bed, 4 columns, chromosome id, bin_start, bin_end, bin_index.
+    """
+    step = resolution
+    bed_df = pd.DataFrame()
+    for i in range(len(sizes)):
+        N = sizes[1][i]        
+        bin_s = np.array([k for k in range(0,N,step)])
+        bin_e = bin_s + step
+        bin_e[-1] = N
+        tmp_df = pd.DataFrame([sizes[0][i]]*len(bin_s),columns=["chrname"])
+        tmp_df.insert(1,"bin_s",bin_s)
+        tmp_df.insert(2,"bin_e",bin_e)
+        bed_df = pd.concat([bed_df,tmp_df],ignore_index=True)
+    bin_index = [i+1 for i in range(len(bed_df))]
+    bed_df.insert(3,"bin_id",bin_index)
+    return bed_df
+        
+    
+    
