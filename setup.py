@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# version: 1.2.1
+# version: 1.3.1
 # author: Qian Yang
 # Contact: dtzxyangq@foxmail.com
 
 import os,sys,io
 from setuptools import setup,find_packages
 
-VERSION = '1.2.1'
+VERSION = '1.3.1'
 with open("README.md","r") as f:
     DESCRIPTION = f.read()
 
@@ -16,10 +16,10 @@ with open("README.md","r") as f:
 tests_require= []
 install_requires = ['numpy', 
                     'scipy',
-                    'pandas',
+                    'pandas<=1.3.5',
                     'matplotlib',
                     'seaborn',
-                    'cooler'
+                    'cooler<=0.8.11'
                    ]
 JAVA_pkgs = {
     "HiSTra":["deDoc/deDoc.jar","juice/juicer_tools_2.09.00.jar"]
