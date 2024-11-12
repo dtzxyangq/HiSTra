@@ -45,11 +45,11 @@ def hic2mat(hicfile,matrix_path,juice_path,sizes):
     outdir500k = os.path.join(matrix_path,'Matrix_from_hic',fl,f"{num2res_sim(res_low)}")
     if not os.path.exists(outdir500k):
         os.makedirs(outdir500k)
-        print(f"Create outdir in resuloutin {num2res_sim(res_low)}...")
+        print(f"Create outdir in resolution {num2res_sim(res_low)}...")
     outdir100k = os.path.join(matrix_path,'Matrix_from_hic',fl,f"{num2res_sim(res_high)}")
     if not os.path.exists(outdir100k):
         os.makedirs(outdir100k)
-        print(f"Create outdir in resuloutin {num2res_sim(res_high)}...")
+        print(f"Create outdir in resolution {num2res_sim(res_high)}...")
     process, cnt = 0, 0
     sum_process = len(chrname)*(len(chrname)-1)/2
     for chri,chrj in itertools.combinations_with_replacement(chrname,2):
@@ -121,12 +121,12 @@ def cool2mat(coolfile,matrix_path,sizes):
     outdir500k = os.path.join(matrix_path,'Matrix_from_hic',fl,f"{num2res_sim(res_low)}")
     if not os.path.exists(outdir500k):
         os.makedirs(outdir500k)
-        print(f"Create outdir in resuloutin {num2res_sim(res_low)}...")
+        print(f"Create outdir in resolution {num2res_sim(res_low)}...")
         
     outdir100k = os.path.join(matrix_path,'Matrix_from_hic',fl,f"{num2res_sim(res_high)}")
     if not os.path.exists(outdir100k):
         os.makedirs(outdir100k)
-        print(f"Create outdir in resuloutin {num2res_sim(res_high)}...")
+        print(f"Create outdir in resolution {num2res_sim(res_high)}...")
         
     process, cnt = 0, 0
     sum_process = len(chrname)*(len(chrname)-1)/2
@@ -200,14 +200,16 @@ def matrix2mat(cell_dir_path,matrix_path,sizes,normalization):
     bed_df_low, bed_df_high = sizes2bed(sizes,5*res_unit), sizes2bed(sizes,res_unit)
     size_low, size_high = len(bed_df_low)+1, len(bed_df_high)+1
     cnt_low, cnt_high = 0, 0
-
     for cell in cells:
-        ## 对每个cell进行操作
-        # 高分辨率100k
+        ## 对每个cell进行操作        
+        # 1. 高分辨率100k
         cell_path = os.path.join(cell_dir_path,cell,f"{normalization}/{res_unit}/")
+        if not os.path.exists(cell_path):
+            print(f"-------Error! The scHiC data are not found. Please recheck the format of directory tree. {cell_path} does not exist.---------")
+            sys.exit()
         size = size_high
         for file in os.listdir(cell_path):
-            print(file,size)
+            # print(file,size)
             if file.endswith(".matrix"):
                 matrix_file_path = os.path.join(cell_path,file)
                 data = pd.read_csv(matrix_file_path,header=None,sep='\t')
@@ -221,11 +223,15 @@ def matrix2mat(cell_dir_path,matrix_path,sizes,normalization):
                     sum_mat_high = sum_mat_high + tmp_mat
                 cnt_high = cnt_high + 1
             # print(sum(sum_mat.toarray()))
-        # 低分辨率500k    
+            
+        # 2. 低分辨率500k    
         cell_path = os.path.join(cell_dir_path,cell,f"{normalization}/{5*res_unit}/")
+        if not os.path.exists(cell_path):
+            print(f"-------Error! The scHiC data are not found. Please recheck the format of directory tree. {cell_path} does not exist.---------")
+            sys.exit()
         size = size_low
         for file in os.listdir(cell_path):
-            print(file,size)
+            # print(file,size)
             if file.endswith(".matrix"):
                 matrix_file_path = os.path.join(cell_path,file)
                 data = pd.read_csv(matrix_file_path,header=None,sep='\t')
@@ -240,7 +246,55 @@ def matrix2mat(cell_dir_path,matrix_path,sizes,normalization):
                     sum_mat_low = sum_mat_low + tmp_mat
                 cnt_low = cnt_low + 1
             # print(sum(sum_mat.toarray()))
-    return sum_mat_low, sum_mat_high    
+    # 结束对每个cell的求和操作，获得两个全基因组矩阵
+    # 3. 输出染色体内和间矩阵切片
+    res_low = 5*res_unit
+    res_high = res_unit
+    R500 = f"_{num2res_sim(res_low)}.txt"
+    R100 = f"_{num2res_sim(res_high)}.txt"
+    fl = os.path.basename(os.path.abspath(cell_dir_path)).split(".")[0] # get sample name
+    print(f"--------- The cells file path is {cell_dir_path}. ---------")
+    
+    outdir500k = os.path.join(matrix_path,'Matrix_from_hic',fl,f"{num2res_sim(res_low)}")
+    if not os.path.exists(outdir500k):
+        os.makedirs(outdir500k)
+        print(f"Create outdir in resolution {num2res_sim(res_low)}...")
+        
+    outdir100k = os.path.join(matrix_path,'Matrix_from_hic',fl,f"{num2res_sim(res_high)}")
+    if not os.path.exists(outdir100k):
+        os.makedirs(outdir100k)
+        print(f"Create outdir in resolution {num2res_sim(res_high)}...")    
+    
+    process, cnt = 0, 0
+    sum_process = len(chrname)*(len(chrname)-1)/2
+    for chri,chrj in itertools.combinations_with_replacement(chrname,2):
+        chri_pre, chrj_pre = chrname_pre(chri), chrname_pre(chrj)
+        if chrj==chri:
+            print(f"--------- We are dumpping {fl} sample chromosome pairs {chri,chrj}.")
+            print(f"--------- Process is completed {process*100/sum_process}%... ---------") # for process
+            process+=len(chrname)-cnt-1
+            cnt+=1
+        chri_s, chri_e = bed_df_low[bed_df_low.chrname==chri]["bin_id"].min(),bed_df_low[bed_df_low.chrname==chri]["bin_id"].max()
+        chrj_s, chrj_e = bed_df_low[bed_df_low.chrname==chrj]["bin_id"].min(),bed_df_low[bed_df_low.chrname==chrj]["bin_id"].max()
+        # print(chri_s, chri_e, chrj_s, chrj_e)
+        test_coo = sum_mat_low.tocsr()[chri_s:chri_e,chrj_s:chrj_e].tocoo()
+        test_pd = pd.DataFrame()
+        test_pd.insert(0,'row',test_coo.row*res_low)
+        test_pd.insert(1,'col',test_coo.col*res_low)
+        test_pd.insert(2,'weight',test_coo.data)        
+        test_pd.to_csv(f"{outdir500k}/{chri_pre}{chri}_{chri_pre}{chrj}{R500}",sep='\t',header=None,index=None)
+    
+        chri_s, chri_e = bed_df_high[bed_df_high.chrname==chri]["bin_id"].min(),bed_df_high[bed_df_high.chrname==chri]["bin_id"].max()
+        chrj_s, chrj_e = bed_df_high[bed_df_high.chrname==chrj]["bin_id"].min(),bed_df_high[bed_df_high.chrname==chrj]["bin_id"].max()
+        # print(chri_s, chri_e, chrj_s, chrj_e)
+        test_coo = sum_mat_high.tocsr()[chri_s:chri_e,chrj_s:chrj_e].tocoo()
+        test_pd = pd.DataFrame()
+        test_pd.insert(0,'row',test_coo.row*res_high)
+        test_pd.insert(1,'col',test_coo.col*res_high)
+        test_pd.insert(2,'weight',test_coo.data)        
+        test_pd.to_csv(f"{outdir100k}/{chri_pre}{chri}_{chri_pre}{chrj}{R100}",sep='\t',header=None,index=None)    
+    # return sum_mat_low, sum_mat_high    
+    return os.path.join(matrix_path,'Matrix_from_hic',fl)
     
     
 if __name__ == "__main__":

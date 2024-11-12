@@ -12,12 +12,13 @@ import scipy.stats as st
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 import seaborn as sns
+import glob
 
 from datetime import *
 from scipy import sparse
 
 from HiSTra.utils import *
-from HiSTra.hicInput import hic2mat,cool2mat
+from HiSTra.hicInput import hic2mat,cool2mat,matrix2mat
 from HiSTra.SparseMatrixDeal import *
 from HiSTra.SignalFinder import *
 from HiSTra.BoxFinder import *
@@ -41,13 +42,13 @@ def precheck(prog_args):
         print('deDoc_path is set: ',deDoc_path)
         print("-------Error! deDoc.jar are not found.---------")
         return False
-    if (not os.path.exists(test_path)) or (not (test_path.endswith('.hic') or test_path.endswith('.mcool'))):
+    if (not os.path.exists(test_path)):        
         print('test_path is set: ',test_path)
-        print("-------Error! Test sample hicfile/coolfile are not found.---------")
-        return False
-    if (not os.path.exists(control_path)) or (not(control_path.endswith('.hic') or control_path.endswith('.mcool'))):
+        print("-------Error! Test sample hicfile/coolfile/cells_dir are not found.---------")
+        return False    
+    if (not os.path.exists(control_path)):
         print('control_path is set: ',control_path)
-        print("-------Error! Control sample hicfile/coolfile are not found.---------")
+        print("-------Error! Control sample hicfile/coolfile/cells_dir are not found.---------")
         return False
     if (not os.path.exists(sizes_path)):
         print('sizes_path is set: ',sizes_path)
@@ -65,6 +66,8 @@ def run_main(prog_args):
         sizes_path=os.path.abspath(os.path.expanduser(prog_args.sizes))
         control_path=os.path.abspath(os.path.expanduser(prog_args.control))
         output_path=os.path.abspath(os.path.expanduser(prog_args.output))
+        normalization=prog_args.normalization
+        scHiC_test, scHiC_control = False, False
         if (test_path.endswith('.hic') or control_path.endswith('.hic')):
             juice_path=os.path.abspath(os.path.expanduser(prog_args.juice))
         deDoc_path=os.path.abspath(os.path.expanduser(prog_args.deDoc))
@@ -73,6 +76,12 @@ def run_main(prog_args):
             print('juice_path is set: ',juice_path)
         print('deDoc_path is set: ',deDoc_path)
         print('output_path is set: ',output_path)
+        if (not (test_path.endswith('.hic') or test_path.endswith('.mcool'))):
+            print("-------Test sample hicfile/coolfile are not found. Let's start scHiC pipeline of test_sample.---------")
+            scHiC_test = True
+        if (not (control_path.endswith('.hic') or control_path.endswith('.mcool'))):
+            print("-------Test control hicfile/coolfile are not found. Let's start scHiC pipeline of control_sample.---------")
+            scHiC_control = True
         print(f"------- Precheck Work finish. -------")
     # ------ Step 1 Dump matrix. -------
     if test_path.endswith('.hic'):
@@ -83,6 +92,10 @@ def run_main(prog_args):
         controlDir_Mat_from_hic = hic2mat(control_path,output_path,juice_path,sizes)
     if control_path.endswith('.mcool'):
         controlDir_Mat_from_hic = cool2mat(control_path,output_path,sizes)
+    if scHiC_test:
+        testDir_Mat_from_hic = matrix2mat(test_path,output_path,sizes,normalization)
+    if scHiC_control:
+        controlDir_Mat_from_hic = matrix2mat(control_path,output_path,sizes,normalization)
     # ----- time consumed print -------
     end1 = datetime.now()
     print(f"------ Your test sample hicfile is dumpped in {testDir_Mat_from_hic}. ------")
