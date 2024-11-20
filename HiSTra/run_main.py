@@ -122,13 +122,13 @@ def run_main(prog_args):
     for file in os.listdir(SV_resultpath):
         if fnmatch.fnmatch(file,'*sorted.csv'):
             sv_result_sort = pd.read_csv(os.path.join(SV_resultpath,file))
-    result_pick_len = deDoc_run(os.path.join(testDir_mat_aligned,num2res_sim(res_unit)), sv_result_sort, prog_args.baseline, deDoc_path, res_unit)
+    result_pick_len = deDoc_run(os.path.join(testDir_mat_aligned,num2res_sim(res_unit)), sv_result_sort, prog_args.baseline, deDoc_path, sizes)
     path = os.path.dirname(testDir_mat_aligned)
     sample_name = os.path.basename(testDir_mat_aligned)
     if not (prog_args.top==0):
 #         result_pick_len = min(result_pick_len,prog_args.top) #edit log 2021-11-17 to extend the --top parameter
         result_pick_len = prog_args.top
-    TLplotandBEDproduce(path,sample_name,sv_result_sort[0:result_pick_len],res_unit,prog_args.no_figure)
+    TLplotandBEDproduce(path,sample_name,sv_result_sort[0:result_pick_len],sizes,prog_args.no_figure)
     # ----- time consumed print -------
     end4 = datetime.now()
     print(f"------ Translocation boxes are saved in {SV_resultpath}")

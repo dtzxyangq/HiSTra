@@ -53,7 +53,7 @@ def Eigen_calculation(path_in,k,sizes):
     
     resolution = [f"{num2res_sim(res_low)}",f"{num2res_sim(res_high)}"]
     for p,filename in enumerate(files): # filename format is *00k/chr1_chr2_*.txt
-        M = sparse_matrix_in(os.path.join(path_in,filename), k, res_unit) # float 乘法快！但是转化很慢。
+        M = sparse_matrix_in(os.path.join(path_in,filename), k, sizes) # float 乘法快！但是转化很慢。
         cutoff = np.percentile(M,99.99,interpolation='nearest') #去掉特别大的值
         M[M>cutoff] = cutoff
         MMT = np.dot(M,M.T)

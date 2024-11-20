@@ -90,13 +90,14 @@ def deDoc_createInputMatrix(MMT,dirname,chr1,chr2,resolution):
     if not os.path.exists(filename):
         np.savetxt(filename,X1,fmt='%d %d %.3lf',header=str(len(X1.data)),comments='')
     
-def deDoc_in_pre(dirname,sample_df, res_unit, cutoff=0.6):
+def deDoc_in_pre(dirname,sample_df, sizes, cutoff=0.6):
     """
     Input:
         - dirname: ../Matrix_aligned/Sample_name/100k
         - sample_df: chromosome pairs with sorted score
         - cutoff: for choose the baseline of the prop in cumsum of the sorted score.
     """
+    res_unit = sizes2resUnit(sizes)
     dirname = os.path.abspath(dirname)
     pick_len = chromoTLPairsNumber(sample_df,os.path.dirname(dirname).replace('Matrix_aligned','SV_result'),cutoff)
     pick_df = sample_df.head(pick_len)
@@ -105,7 +106,7 @@ def deDoc_in_pre(dirname,sample_df, res_unit, cutoff=0.6):
         filename = f'{chrname_pre(chr1)}'+chr1+f'_{chrname_pre(chr2)}'+chr2+f'_{num2res_sim(res_unit)}.txt'
         filepath = os.path.join(dirname,filename)
         
-        M = sparse_matrix_in(filepath,1,res_unit)
+        M = sparse_matrix_in(filepath,1,sizes)
         cutoff = np.percentile(M,99.99,interpolation='nearest') #去掉特别大的值
         M[M>cutoff] = cutoff
         MMT = np.dot(M,M.T)
@@ -114,7 +115,7 @@ def deDoc_in_pre(dirname,sample_df, res_unit, cutoff=0.6):
         deDoc_createInputMatrix(MTM,os.path.dirname(dirname),chr2,chr1,f'{num2res_sim(res_unit)}')
     return dirname.replace(f"{num2res_sim(res_unit)}",f'square_{num2res_sim(res_unit)}'),pick_len
 
-def deDoc_run(dirname, sample_df, cutoff, deDoc_path,res_unit):
+def deDoc_run(dirname, sample_df, cutoff, deDoc_path,sizes):
     """
     Input:
         - dirname: ../Matrix_aligned/Sample_name/100k
@@ -125,7 +126,8 @@ def deDoc_run(dirname, sample_df, cutoff, deDoc_path,res_unit):
         - 
     """
     deDoc_path = os.path.abspath(deDoc_path)
-    sq_M_dir,pick_len = deDoc_in_pre(dirname,sample_df,res_unit,cutoff)
+    res_unit = sizes2resUnit(sizes)
+    sq_M_dir,pick_len = deDoc_in_pre(dirname,sample_df,sizes,cutoff)
     file_L = []
     for filename in os.listdir(sq_M_dir):
         if (filename.find('deDoc')==-1):
@@ -195,7 +197,11 @@ def deDocResult(path,name,chr1,chr2,bins):
         f = open(os.path.join(filepath,filename))
     else:
         filename = chr1+"_in_"+chr1+"_"+chr2+".txt.deDoc(M).uncontinuedTAD"
-        f = open(os.path.join(filepath,filename))
+        if (os.path.exists(os.path.join(filepath,filename))):
+            f = open(os.path.join(filepath,filename))
+        else:
+            print("--- This pair has no significant TL regions.---")
+            return [],[]
     high,low = [],[]
     line = f.readline()
     if line.strip()!='':
@@ -286,7 +292,7 @@ def bedcombine(bed,start,end,bins):
             result.loc[p,'e'] = max(e_tmp,e)
     return result[0:p+1]
 
-def SV_boxfinder(path,name,chr1,chr2,bins):
+def SV_boxfinder(path,name,chr1,chr2,sizes):
     """
     Input:
         - path: ../Matrix_align
@@ -296,8 +302,9 @@ def SV_boxfinder(path,name,chr1,chr2,bins):
     """
     
 #     M = Sparse_in("/media/qian/data_sdb4/projects/Test_out/HiST/Matrix_aligned/"+name+"/100k/chr"+chr1+"_chr"+chr2+"_100k.txt",1)
-    matrix_file_path = os.path.join(path,name,f'{num2res_sim(bins)}',f'{chrname_pre(chr1)}'+chr1+f"_{chrname_pre(chr2)}"+chr2+"_100k.txt")
-    M = sparse_matrix_in(matrix_file_path, 1)
+    bins = sizes2resUnit(sizes)
+    matrix_file_path = os.path.join(path,name,f'{num2res_sim(bins)}',f'{chrname_pre(chr1)}'+chr1+f"_{chrname_pre(chr2)}"+chr2+f"_{num2res_sim(bins)}.txt")
+    M = sparse_matrix_in(matrix_file_path, 1, sizes)
     cutoff = np.percentile(M,99.99,interpolation='nearest') #去掉特别大的值
     M[M>cutoff] = cutoff
     chr_i = M.shape[0]
@@ -320,8 +327,10 @@ def SV_boxfinder(path,name,chr1,chr2,bins):
     ######## deDoc找TL区域,combine生成最终bed文件 ###########
     low_i,high_i = deDocResult(path,name,chr1,chr2,bins)
     low_j,high_j = deDocResult(path,name,chr2,chr1,bins)
-    high_i = TL_section_deDoc(low_i,high_i,result_i)
-    high_j = TL_section_deDoc(low_j,high_j,result_j)
+    if (low_i!=[]) and (high_i!=[]):
+        high_i = TL_section_deDoc(low_i,high_i,result_i)
+    if (low_j!=[]) and (high_j!=[]):
+        high_j = TL_section_deDoc(low_j,high_j,result_j)
     
     Bed_i = deDoc2Bed(high_i,chr1,result_i,cutline_i,bins)
     Bed_j = deDoc2Bed(high_j,chr2,result_j,cutline_j,bins)
@@ -345,13 +354,14 @@ def SV_boxfinder(path,name,chr1,chr2,bins):
                 ex, ey = int(Bed_com_j.loc[q,'e']),int(Bed_com_i.loc[p,'e'])
                 Box_max = np.max(M[int(sy/bins):int(ey/bins)+1,int(sx/bins):int(ex/bins)+1])
                 Box_percetile = np.percentile(M[int(sy/bins):int(ey/bins)+1,int(sx/bins):int(ex/bins)+1],99)
-                box.loc[i] = [pairs,chrname_pre(chr1)+chr1,sy,ey,chrname_pre(chr2)+chr2,sx,ex,Box_max,Box_percetile ]
-                i = i + 1
+                if Box_max>=1:
+                    box.loc[i] = [pairs,chrname_pre(chr1)+chr1,sy,ey,chrname_pre(chr2)+chr2,sx,ex,Box_max,Box_percetile ]
+                    i = i + 1
     deDocBed = pd.concat([Bed_i_pick,Bed_j_pick],ignore_index=True)
     combineBed = pd.concat([Bed_com_i,Bed_com_j],ignore_index=True)
     return deDocBed,combineBed,box
 
-def PlotBreakpoint(path,name,chr1,chr2,bins):
+def PlotBreakpoint(path,name,chr1,chr2,sizes):
     """
     Input:
         - path: ../Matrix_align
@@ -360,8 +370,9 @@ def PlotBreakpoint(path,name,chr1,chr2,bins):
         - bins: 100k resolution data, 100000
     """
 #     M = Sparse_in("/media/qian/data_sdb4/projects/Test_out/HiST/Matrix_aligned/"+name+"/100k/chr"+chr1+"_chr"+chr2+"_100k.txt",1)
+    bins = sizes2resUnit(sizes)
     matrix_file_path = os.path.join(path,name,num2res_sim(bins),chrname_pre(chr1)+chr1+f"_{chrname_pre(chr2)}"+chr2+f"_{num2res_sim(bins)}.txt")
-    M = sparse_matrix_in(matrix_file_path, 1, bins)
+    M = sparse_matrix_in(matrix_file_path, 1, sizes)
     cutoff = np.percentile(M,99.99,interpolation='nearest') #去掉特别大的值
     M[M>cutoff] = cutoff
     chr_i = M.shape[0]
@@ -387,8 +398,10 @@ def PlotBreakpoint(path,name,chr1,chr2,bins):
     ######## deDoc找TL区域,combine生成最终bed文件 ###########
     low_i,high_i = deDocResult(path,name,chr1,chr2,bins)
     low_j,high_j = deDocResult(path,name,chr2,chr1,bins)
-    high_i = TL_section_deDoc(low_i,high_i,result_i)
-    high_j = TL_section_deDoc(low_j,high_j,result_j)
+    if (low_i!=[]) and (high_i!=[]):
+        high_i = TL_section_deDoc(low_i,high_i,result_i)
+    if (low_j!=[]) and (high_j!=[]):
+        high_j = TL_section_deDoc(low_j,high_j,result_j)
     
     Bed_i = deDoc2Bed(high_i,chr1,result_i,cutline_i,bins)
     Bed_j = deDoc2Bed(high_j,chr2,result_j,cutline_j,bins)
@@ -528,19 +541,20 @@ def PlotBreakpoint(path,name,chr1,chr2,bins):
 #     return deDocBed,combineBed,box,fig,fig2
     return deDocBed,combineBed,box,fig
     
-def TLplotandBEDproduce(path,name,dataset,res_unit,no_pic_fg=False):
+def TLplotandBEDproduce(path,name,dataset,sizes,no_pic_fg=False):
     deDocBed_all = pd.DataFrame()
     combineBed_all = pd.DataFrame()
     box_all = pd.DataFrame()
     box_filter = pd.DataFrame()
     print(name,' SV chromosome pairs:',len(dataset))
     result_path = path.replace('Matrix_aligned','SV_result')
+    res_unit = sizes2resUnit(sizes)
     for i in dataset.index:
         chr1,chr2 = str(dataset.loc[i,'Chr_i']),str(dataset.loc[i,'Chr_j'])
         print(i,chr1,chr2)
         if not no_pic_fg:
 #             deDocBed,combineBed,box,fig,fig2 = PlotBreakpoint(path,name,chr1,chr2)
-            deDocBed,combineBed,box,fig = PlotBreakpoint(path,name,chr1,chr2,res_unit)
+            deDocBed,combineBed,box,fig = PlotBreakpoint(path,name,chr1,chr2,sizes)
             fig_path = os.path.join(result_path,name,'pic')
             if not os.path.exists(fig_path):
                 os.makedirs(fig_path)
@@ -548,7 +562,7 @@ def TLplotandBEDproduce(path,name,dataset,res_unit,no_pic_fg=False):
             fig.savefig(os.path.join(fig_path,str(i)+f'_Combine_{chrname_pre(chr1)}'+chr1+f'_{chrname_pre(chr2)}'+chr2+'.png'),dpi=400,format='png')
 #             fig2.savefig(os.path.join(fig_path,str(i)+'_Combine_chr'+chr1+'_chr'+chr2+'_zoomin.png'),dpi=400,format='png')
         else:
-            deDocBed,combineBed,box=SV_boxfinder(path,name,chr1,chr2,res_unit)
+            deDocBed,combineBed,box=SV_boxfinder(path,name,chr1,chr2,sizes)
         deDocBed_all = pd.concat([deDocBed_all,deDocBed],ignore_index=True)
         combineBed_all = pd.concat([combineBed_all,combineBed],ignore_index=True)
         box_all = pd.concat([box_all,box],ignore_index=True)
