@@ -1,14 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+<<<<<<< HEAD
 # version: 1.3.1
+=======
+# version: 1.4
+>>>>>>> e521222316937bed8bce8772479faab8e23d954f
 # author: Qian Yang
 # Contact: dtzxyangq@foxmail.com
 
 import os,sys,io
 from setuptools import setup,find_packages
 
+<<<<<<< HEAD
 VERSION = '1.3.1'
+=======
+VERSION = '1.4'
+>>>>>>> e521222316937bed8bce8772479faab8e23d954f
 with open("README.md","r") as f:
     DESCRIPTION = f.read()
 

@@ -23,7 +23,7 @@ Make sure chromosome.sizes file is exactly the file used in generating test(and 
 
 ### Directory tree
 
-A recommended work directory looks like:
+For bulk HiC data, a recommended work directory looks like:
 
 ```shell
 mkdir work_dir
@@ -34,10 +34,9 @@ mkdir TL_output
 ln -s deDoc_dir_path .
 ln -s juice_dir_path .
 ```
+The directory tree is:
 
-Finally, the directory tree is:
-
-```
+```shell
 ├── deDoc
 │   ├── deDoc.jar
 ├── hic_input
@@ -49,6 +48,28 @@ Finally, the directory tree is:
 │   ├── juicer_tools_2.09.00.jar
 └── TL_output
 ```
+
+For scHiC data, a recommand work directory looks like:
+```shell
+├── deDoc
+│   ├── deDoc.jar
+├── hic_input
+│   ├── Control_cells_dir
+│   │   ├── cell_1
+... │   │   ├── raw
+    │   │   │   ├── 100000
+    │   │   │   │   └── *.matrix
+    │   │   │   └── 500000
+    │   │   │       └── *.matrix
+    │   │   └── iced
+...    ...      ├── ...
+
+│   ├── Test_cells_dir
+...    ...
+└── TL_output
+```
+**Note: For scHiC, the subdiretory of hic_input MUST be cells_dir/normalization/resolution/*.matrix!!**
+Here, normalization could be "raw"/"iced" or any other string you used for path(which is similar to the output format of HiC-Pro), default is "raw". And, resolution is adapted for genome size, e.g. hg19 the resolution should be 100000 and 500000.
 
 ### Example
 
@@ -71,14 +92,37 @@ For example, in the hg.sizes the largest size of chromosome is **chr1(249250621)
 
 #### Command
 
+For bulk HiC data,
 ```shell
 # Assume you are in the work_dir,a standard command is for hic format file
-HiST -t hic_input/Test_GSE63525_K562_combined_30.hic -c hic_input/Control_GSE63525_IMR90_combined_30.hic -o TL_output/ -d deDoc/deDoc.jar -j juice/juicer_tools_2.09.00.jar -s sizes/chrom_hg19.sizes
+HiST -t hic_input/Test_GSE63525_K562_combined_30.hic \
+-c hic_input/Control_GSE63525_IMR90_combined_30.hic \
+-o TL_output/ \
+-d deDoc/deDoc.jar \
+-j juice/juicer_tools_2.09.00.jar \
+-s sizes/chrom_hg19.sizes 
 # or mcool format file
-HiST -t hic_input/Test_GSE63525_K562_combined_30.mcool -c hic_input/Control_GSE63525_IMR90_combined_30.mcool -o TL_output/ -d deDoc/deDoc.jar -s sizes/chrom_hg19.sizes
+HiST -t hic_input/Test_GSE63525_K562_combined_30.mcool \
+-c hic_input/Control_GSE63525_IMR90_combined_30.mcool \
+-o TL_output/ \
+-d deDoc/deDoc.jar \
+-s sizes/chrom_hg19.sizes
 # or mixed format file
-HiST -t hic_input/Test_GSE63525_K562_combined_30.mcool -c hic_input/Control_GSE63525_IMR90_combined_30.hic -o TL_output/ -d deDoc/deDoc.jar -j juice/juicer_tools_2.09.00.jar -s sizes/chrom_hg19.sizes
+HiST -t hic_input/Test_GSE63525_K562_combined_30.mcool 
+-c hic_input/Control_GSE63525_IMR90_combined_30.hic \
+-o TL_output/ \
+-d deDoc/deDoc.jar \
+-j juice/juicer_tools_2.09.00.jar \
+-s sizes/chrom_hg19.sizes
 # Then you can find the result in folder TL_output/SV_result.
+```
+For scHiC data,
+```shell
+HiST -t hic_input/Test_cells_dir/ \
+-c hic_input/Control_cells_dir  \
+-s sizes/chrom_hg19.sizes \
+-d deDoc/deDoc.jar \
+-o TL_output/
 ```
 
 #### Figure
