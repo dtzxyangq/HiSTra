@@ -251,6 +251,8 @@ def deDoc2Bed(high,chr2,result,cutline,bins):
     df_peak = pd.DataFrame(columns=['chr_id','s','e','Above_95%cut'])
     p = 0
     gap = 3
+    if high == []:
+        return df_peak
     df_peak.loc[0]=[f'{chrname_pre(chr2)}'+chr2,high[0]*bins,high[0]*bins,'']
 
     for i in range(1,len(high)):
