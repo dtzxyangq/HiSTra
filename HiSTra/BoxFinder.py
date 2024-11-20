@@ -72,7 +72,7 @@ def deDoc_createInputMatrix(MMT,dirname,chr1,chr2,resolution):
     """
     # uni_matrix = np.random.uniform(0,0.01,size=MMT.shape)
     # avg_matrix = (uni_matrix + uni_matrix.T)/2.0
-    test_M = sparse.random(MTM.shape[0],MTM.shape[1],density =0.01,format='coo').toarray()*0.01
+    test_M = sparse.random(MMT.shape[0],MMT.shape[1],density =0.01,format='coo').toarray()*0.01
     avg_M = (test_M + test_M.T)/2.0
     X1 = sparse.coo_matrix(MMT + avg_M)
     col =np.int64( X1.col + 1)
