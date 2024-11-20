@@ -70,9 +70,11 @@ def deDoc_createInputMatrix(MMT,dirname,chr1,chr2,resolution):
     Return:
         None.
     """
-    uni_matrix = np.random.uniform(0,0.01,size=MMT.shape)
-    avg_matrix = (uni_matrix + uni_matrix.T)/2.0
-    X1 = sparse.coo_matrix(MMT + avg_matrix)
+    # uni_matrix = np.random.uniform(0,0.01,size=MMT.shape)
+    # avg_matrix = (uni_matrix + uni_matrix.T)/2.0
+    test_M = sparse.random(MTM.shape[0],MTM.shape[1],density =0.01,format='coo').toarray()*0.01
+    avg_M = (test_M + test_M.T)/2.0
+    X1 = sparse.coo_matrix(MMT + avg_M)
     col =np.int64( X1.col + 1)
     row = np.int64(X1.row + 1)
     data = X1.data
@@ -86,7 +88,7 @@ def deDoc_createInputMatrix(MMT,dirname,chr1,chr2,resolution):
         print(f"--- Create new deDoc folder in {deDoc_in_dir}... ---")
     filename = os.path.join(deDoc_in_dir, chr1+'_in_'+chr1+'_'+chr2+'.txt')
     if not os.path.exists(filename):
-        np.savetxt(filename,X1,fmt='%d %d %.5lf',header=str(len(X1.data)),comments='')
+        np.savetxt(filename,X1,fmt='%d %d %.3lf',header=str(len(X1.data)),comments='')
     
 def deDoc_in_pre(dirname,sample_df, res_unit, cutoff=0.6):
     """
