@@ -149,6 +149,7 @@ def breakpoint(MMT):
         - a score list normalized in [0,1].
     """
     batch_size = np.max([1,np.min([np.int64(MMT.shape[0]/100),10])]) # 1<=batch_size<=10
+    
     left = int(batch_size/2)
     right = batch_size-left
     result = np.zeros((MMT.shape[0],1))
@@ -158,6 +159,8 @@ def breakpoint(MMT):
         result[lu] = np.mean(MMT[0:lu*2+1,0:lu*2+1])
     for lu in range(MMT.shape[0]-batch_size+1+left,MMT.shape[0]):
         result[lu] = np.mean(MMT[lu-left:,lu-left:])
+    if np.max(result)==0:
+        return result,batch_size
     return result/np.max(result),batch_size
 
 def TL_section_finder(result,cutline):#rough cut peaks
@@ -171,6 +174,7 @@ def TL_section_finder(result,cutline):#rough cut peaks
     """
     seg_cut = 30
     pick = np.where(result>cutline)[0]
+    # print(result,cutline) # for debug
     start = [pick[0]]
     end = []
     tmp_index = np.where(np.diff(pick)>seg_cut)[0]
@@ -180,7 +184,7 @@ def TL_section_finder(result,cutline):#rough cut peaks
     end.append(pick[-1])
     return start,end
 
-def deDocResult(path,name,chr1,chr2,bins):
+def deDocResult(path,name,chr1,chr2,bins,result):
     """
     Reading the deDoc result.
     Input:
@@ -200,15 +204,19 @@ def deDocResult(path,name,chr1,chr2,bins):
         if (os.path.exists(os.path.join(filepath,filename))):
             f = open(os.path.join(filepath,filename))
         else:
-            print("--- This pair has no significant TL regions.---")
+            print(f"--- This pair has no significant TL regions because of {chr1}.---")
             return [],[]
     high,low = [],[]
     line = f.readline()
     if line.strip()!='':
         high = [int(item)-1 for item in line.strip().split(' ')]
     line = f.readline()
-    if line.strip()!='':
+    while line.strip()!='':
+    # if line.strip()!='':
         low = [int(item)-1 for item in line.strip().split(' ')]
+        high = TL_section_deDoc(low,high,result)
+        line = f.readline()
+    high = TL_section_deDoc(low,high,result)
     return low,high
 
 def auc_cutline(result):
@@ -327,12 +335,12 @@ def SV_boxfinder(path,name,chr1,chr2,sizes):
     start_j,end_j = TL_section_finder(result_j,cutline_j)
     
     ######## deDoc找TL区域,combine生成最终bed文件 ###########
-    low_i,high_i = deDocResult(path,name,chr1,chr2,bins)
-    low_j,high_j = deDocResult(path,name,chr2,chr1,bins)
-    if (low_i!=[]) and (high_i!=[]):
-        high_i = TL_section_deDoc(low_i,high_i,result_i)
-    if (low_j!=[]) and (high_j!=[]):
-        high_j = TL_section_deDoc(low_j,high_j,result_j)
+    low_i,high_i = deDocResult(path,name,chr1,chr2,bins,result_i)
+    low_j,high_j = deDocResult(path,name,chr2,chr1,bins,result_j)
+    # if (low_i!=[]) and (high_i!=[]):
+    #     high_i = TL_section_deDoc(low_i,high_i,result_i)
+    # if (low_j!=[]) and (high_j!=[]):
+    #     high_j = TL_section_deDoc(low_j,high_j,result_j)
     
     Bed_i = deDoc2Bed(high_i,chr1,result_i,cutline_i,bins)
     Bed_j = deDoc2Bed(high_j,chr2,result_j,cutline_j,bins)
@@ -376,21 +384,23 @@ def PlotBreakpoint(path,name,chr1,chr2,sizes):
     matrix_file_path = os.path.join(path,name,num2res_sim(bins),chrname_pre(chr1)+chr1+f"_{chrname_pre(chr2)}"+chr2+f"_{num2res_sim(bins)}.txt")
     M = sparse_matrix_in(matrix_file_path, 1, sizes)
     cutoff = np.percentile(M,99.99,interpolation='nearest') #去掉特别大的值
-    M[M>cutoff] = cutoff
+    if cutoff>=1: #但也不能全变成0,scHiC时发现bug
+        M[M>cutoff] = cutoff
     chr_i = M.shape[0]
     chr_j = M.shape[1]
+    # print(f"for debug_cutoff:{cutoff}",sparse.coo_matrix(M))
     
     MMT = np.dot(M,M.T)
     MTM = np.dot(M.T,M)
     result_j,batch_size_j = breakpoint(MTM)
     result_i,batch_size_i = breakpoint(MMT)
-#     print('debug!!!!')
+    # print('debug!!!!',np.max(result_i),np.max(result_j))
     percent_cut = 95
 #     cutline_i = min(auc_cutline(result_i),np.percentile(result_i,percent_cut))
 #     cutline_j = min(auc_cutline(result_j),np.percentile(result_j,percent_cut))
     cutline_i = (auc_cutline(result_i)+np.percentile(result_i,percent_cut))/2.0
     cutline_j = (auc_cutline(result_j)+np.percentile(result_j,percent_cut))/2.0
-
+    # print('debug!!!!',cutline_i,cutline_j)
 
 #     print(cutline_i,cutline_j)
     ######## 粗略找breakpoint区域 ############
@@ -398,12 +408,12 @@ def PlotBreakpoint(path,name,chr1,chr2,sizes):
     start_j,end_j = TL_section_finder(result_j,cutline_j)
     
     ######## deDoc找TL区域,combine生成最终bed文件 ###########
-    low_i,high_i = deDocResult(path,name,chr1,chr2,bins)
-    low_j,high_j = deDocResult(path,name,chr2,chr1,bins)
-    if (low_i!=[]) and (high_i!=[]):
-        high_i = TL_section_deDoc(low_i,high_i,result_i)
-    if (low_j!=[]) and (high_j!=[]):
-        high_j = TL_section_deDoc(low_j,high_j,result_j)
+    low_i,high_i = deDocResult(path,name,chr1,chr2,bins,result_i)
+    low_j,high_j = deDocResult(path,name,chr2,chr1,bins,result_j)
+    # if (low_i!=[]) and (high_i!=[]):
+    #     high_i = TL_section_deDoc(low_i,high_i,result_i)
+    # if (low_j!=[]) and (high_j!=[]):
+    #     high_j = TL_section_deDoc(low_j,high_j,result_j)
     
     Bed_i = deDoc2Bed(high_i,chr1,result_i,cutline_i,bins)
     Bed_j = deDoc2Bed(high_j,chr2,result_j,cutline_j,bins)
