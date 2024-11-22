@@ -1,3 +1,0 @@
-include sizes/*.sizes
-#recursive-include *.jar
-#prune example_pic/*
