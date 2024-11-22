@@ -1,11 +1,8 @@
 include sizes/*.sizes
-<<<<<<< HEAD
 recursive-include *.jar
 prune example_pic/*
-=======
 #recursive-include *.jar
 recursive-exclude HiSTra/__pycache *.pyc
 recursive-exclude HiSTra/.ipynb_checkpoints *
 graft sizes
 #prune example_pic/*
->>>>>>> e521222316937bed8bce8772479faab8e23d954f

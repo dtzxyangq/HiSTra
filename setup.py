@@ -1,22 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-<<<<<<< HEAD
-# version: 1.3.1
-=======
-# version: 1.4
->>>>>>> e521222316937bed8bce8772479faab8e23d954f
+# version: 1.4.0
 # author: Qian Yang
 # Contact: dtzxyangq@foxmail.com
 
 import os,sys,io
 from setuptools import setup,find_packages
 
-<<<<<<< HEAD
-VERSION = '1.3.1'
-=======
-VERSION = '1.4'
->>>>>>> e521222316937bed8bce8772479faab8e23d954f
+VERSION = '1.4.0'
 with open("README.md","r") as f:
     DESCRIPTION = f.read()
 
@@ -55,7 +47,7 @@ setup(name='HiSTra',
 #       package_data={"HiSTra":["deDoc/deDoc.jar","juice/juicer_tools_2.09.00.jar"]},
       scripts=['./HiST'],
       install_requires=install_requires,
-      tests_require=tests_require,
+      # tests_require=tests_require,
 #       packages_dir={"":"HiSTra"},
 #       packages=find_packages(where="HiSTra"),
       python_requires=">=3.6",
