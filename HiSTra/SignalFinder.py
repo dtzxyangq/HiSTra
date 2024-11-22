@@ -54,8 +54,11 @@ def Eigen_calculation(path_in,k,sizes):
     resolution = [f"{num2res_sim(res_low)}",f"{num2res_sim(res_high)}"]
     for p,filename in enumerate(files): # filename format is *00k/chr1_chr2_*.txt
         M = sparse_matrix_in(os.path.join(path_in,filename), k, sizes) # float 乘法快！但是转化很慢。
+        # M_noise = sparse.random(M.shape[0],M.shape[1],density =0.01,format='coo').toarray()*0.01
+        # M = M + M_noise
         cutoff = np.percentile(M,99.99,interpolation='nearest') #去掉特别大的值
-        M[M>cutoff] = cutoff
+        if cutoff >= 1:
+            M[M>cutoff] = cutoff
         MMT = np.dot(M,M.T)
         MTM = np.dot(M.T,M)
         eigenvalue,eigenvector = np.linalg.eigh(MMT,UPLO='L')
@@ -88,7 +91,12 @@ def Outlier(eigenvalue):
     z = eigenvalue
     number_Max = len(z[z>1e7])#特别大的离值点单独统计 防止bins过多影响效率
     z = z[z<=1e7]
-    resolution_hist=np.percentile(z,88,interpolation='nearest')
+    # print(eigenvalue,z)
+    if z.size==0:
+        return 0
+    resolution_hist = np.percentile(z,88,method='nearest')
+    if resolution_hist==0:
+        return 0
     number_bin = np.maximum(np.int64(np.amax(z)/resolution_hist),1)
     H,bin_edges = np.histogram(z,bins=number_bin)
     p = -1
@@ -120,6 +128,8 @@ def compare_evalue(test_evalue,control_evalue,chrname):
         eigen_pair_list.append('--'.join([chri,chrj]))
         
     for k in range(test_evalue.shape[0]):
+        chr_i,chr_j = eigen_pos2chr_pos(k,eigen_pair_list)
+        print(f"debug!!!!{chr_i} {chr_j}.")
         eigen_c = abs(test_evalue[k,:])[abs(test_evalue[k,:])>0.1]
         eigen_n = abs(control_evalue[k,:])[abs(control_evalue[k,:])>0.1]
         eigen_c_log = np.log(abs(test_evalue[k,:])[abs(test_evalue[k,:])>0.1])
@@ -132,9 +142,12 @@ def compare_evalue(test_evalue,control_evalue,chrname):
         end_control = len(eigen_n_log)-Outlier_control
         Len_pick = max(min(end_test-len(eigen_c[eigen_c<10]), # choose at least 5 items, this part is exclude
                        end_control-len(eigen_n[eigen_n<10]))-10,5) # outliers and the start points.
-        chr_i,chr_j = eigen_pos2chr_pos(k,eigen_pair_list)
         
-        r,p = st.pearsonr(eigen_c_log[end_test-Len_pick:end_test],eigen_n_log[end_control-Len_pick:end_control])
+        print(Outlier_test,Outlier_control,end_test,end_control,Len_pick)
+        if (end_test>=Len_pick and end_control>=Len_pick):
+            r,p = st.pearsonr(eigen_c_log[end_test-Len_pick:end_test],eigen_n_log[end_control-Len_pick:end_control])
+        else:
+            r,p = 0,0
         # chr_i,chr_j = eigen_pos2chr_pos(k)        
         correlation_L.append([chr_i,chr_j,r,p,
                               np.mean(eigen_c_log[-1:]), np.mean(eigen_n_log[-1:]),

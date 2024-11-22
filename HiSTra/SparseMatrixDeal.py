@@ -47,19 +47,21 @@ def sparse_matrix_in(matrix_file,k,sizes): #pandas 读入单个chri_chrj_100k.tx
     """
     # file是sparse matrix完整路径名字
     # k是分辨率编号
-    data = pd.read_csv(matrix_file,header=None,sep='\t')
     chr1, chr2 = os.path.basename(matrix_file).split('_')[0],os.path.basename(matrix_file).split('_')[1]
-    
     res_unit = sizes2resUnit(sizes)
     res_value = [5*res_unit,res_unit]
     bed_df = sizes2bed(sizes,res_value[k])
     size_chr1 = len(bed_df[(bed_df["chrname"].isin([chr1,chr1.lstrip('chr')]))])
     size_chr2 = len(bed_df[(bed_df["chrname"].isin([chr2,chr2.lstrip('chr')]))])
-    
-    row = np.int64(data[0]/res_value[k])
-    column = np.int64(data[1]/res_value[k])
-    weight = np.float64(data[2])
-    sp = sparse.coo_matrix((weight,(row,column)),shape=(size_chr1,size_chr2))
+
+    if os.path.getsize(matrix_file) == 0:
+        return np.zeros(shape=(size_chr1,size_chr2))
+    else:
+        data = pd.read_csv(matrix_file,header=None,sep='\t')
+        row = np.int64(data[0]/res_value[k])
+        column = np.int64(data[1]/res_value[k])
+        weight = np.float64(data[2])
+        sp = sparse.coo_matrix((weight,(row,column)),shape=(size_chr1,size_chr2))
     return sp.toarray()
 
 def downsample(test_path,control_path,k,sizes): #pandas 读入单个chri_chrj_100k.txt/chri_chrj_500k.txt的函数块 输出一个np.array数组便于计算
@@ -79,10 +81,12 @@ def downsample(test_path,control_path,k,sizes): #pandas 读入单个chri_chrj_10
     control_depth = 0
     for filename in files:
         # print(filename)
-        test_M = pd.read_csv(os.path.join(test_path,filename),header=None,sep='\t')
-        control_M = pd.read_csv(os.path.join(control_path,filename),header=None,sep='\t')
-        test_depth += (sum(test_M[2]))
-        control_depth += (sum(control_M[2]))
+        if os.path.getsize(os.path.join(test_path,filename))!=0:
+            test_M = pd.read_csv(os.path.join(test_path,filename),header=None,sep='\t')
+            test_depth += (sum(test_M[2]))
+        if os.path.getsize(os.path.join(control_path,filename))!=0:
+            control_M = pd.read_csv(os.path.join(control_path,filename),header=None,sep='\t')
+            control_depth += (sum(control_M[2]))   
 #     result = pd.DataFrame((test_depth,control_depth))
     
     testDir_mat_aligned = test_path.replace("Matrix_from_hic","Matrix_aligned")
@@ -127,17 +131,19 @@ def downsampleSaveas(path,file,ratio,test_name): # 注意 file的格式是500k/*
     path = os.path.abspath(path)
     path_tosave = path.replace("Matrix_from_hic","Matrix_aligned") + "_downsample_for_" + test_name
     if not os.path.exists(os.path.join(path_tosave,file)):
-        df = pd.read_csv(os.path.join(path,file),header=None,sep='\t')
-        df.columns=['x','y','w']
-        df_result = df.sample(n=np.int64(sum(df['w'])*ratio),weights=df['w'],replace=True,random_state=1)
-
-        df_downsample = pd.DataFrame(df_result[['x','y']].value_counts(sort=False),dtype=float)
-        depth_down = df_downsample.reset_index().rename(columns={0:'w'})
-
-
         if not os.path.exists(os.path.dirname(os.path.join(path_tosave,file))): # create ../Matrix_aligned/*00k
             os.makedirs(os.path.dirname(os.path.join(path_tosave,file)))
-        depth_down.to_csv(os.path.join(path_tosave,file),header=None,sep='\t',index=None)
+        if os.path.getsize(os.path.join(path,file))!=0:
+            df = pd.read_csv(os.path.join(path,file),header=None,sep='\t')
+            df.columns=['x','y','w']
+            df_result = df.sample(n=np.int64(sum(df['w'])*ratio),weights=df['w'],replace=True,random_state=1)
+    
+            df_downsample = pd.DataFrame(df_result[['x','y']].value_counts(sort=False),dtype=float)
+            depth_down = df_downsample.reset_index().rename(columns={0:'w'})        
+            depth_down.to_csv(os.path.join(path_tosave,file),header=None,sep='\t',index=None)
+        else:
+            file = open(os.path.join(path_tosave,file),"w")
+            file.close()
         print(f"------Create. Aligned matrix is {file}.")
     else:
         print(f"------Reanalyse.{file} exists. Continue.")

@@ -72,9 +72,10 @@ def deDoc_createInputMatrix(MMT,dirname,chr1,chr2,resolution):
     """
     # uni_matrix = np.random.uniform(0,0.01,size=MMT.shape)
     # avg_matrix = (uni_matrix + uni_matrix.T)/2.0
-    test_M = sparse.random(MMT.shape[0],MMT.shape[1],density =0.01,format='coo').toarray()*0.01
-    avg_M = (test_M + test_M.T)/2.0
-    X1 = sparse.coo_matrix(MMT + avg_M)
+    # test_M = sparse.random(MMT.shape[0],MMT.shape[1],density =0.01,format='coo').toarray()*0.01
+    # avg_M = (test_M + test_M.T)/2.0
+    # X1 = sparse.coo_matrix(MMT + avg_M)
+    X1 = sparse.coo_matrix(MMT)
     col =np.int64( X1.col + 1)
     row = np.int64(X1.row + 1)
     data = X1.data
@@ -108,7 +109,10 @@ def deDoc_in_pre(dirname,sample_df, sizes, cutoff=0.6):
         
         M = sparse_matrix_in(filepath,1,sizes)
         cutoff = np.percentile(M,99.99,interpolation='nearest') #去掉特别大的值
-        M[M>cutoff] = cutoff
+        if cutoff>=1:
+            M[M>cutoff] = cutoff
+        M_noise = sparse.random(M.shape[0],M.shape[1],density =0.01,format='coo').toarray()*0.04
+        M = M + M_noise
         MMT = np.dot(M,M.T)
         MTM = np.dot(M.T,M)
         deDoc_createInputMatrix(MMT,os.path.dirname(dirname),chr1,chr2,f'{num2res_sim(res_unit)}')
@@ -316,7 +320,8 @@ def SV_boxfinder(path,name,chr1,chr2,sizes):
     matrix_file_path = os.path.join(path,name,f'{num2res_sim(bins)}',f'{chrname_pre(chr1)}'+chr1+f"_{chrname_pre(chr2)}"+chr2+f"_{num2res_sim(bins)}.txt")
     M = sparse_matrix_in(matrix_file_path, 1, sizes)
     cutoff = np.percentile(M,99.99,interpolation='nearest') #去掉特别大的值
-    M[M>cutoff] = cutoff
+    if cutoff>=1:
+        M[M>cutoff] = cutoff
     chr_i = M.shape[0]
     chr_j = M.shape[1]
     
