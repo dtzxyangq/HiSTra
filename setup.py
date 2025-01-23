@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# version: 1.4.0
+# version: 1.4.1
 # author: Qian Yang
 # Contact: dtzxyangq@foxmail.com
 
 import os,sys,io
 from setuptools import setup,find_packages
 
-VERSION = '1.4.0'
+VERSION = '1.4.1'
 with open("README.md","r") as f:
     DESCRIPTION = f.read()
 

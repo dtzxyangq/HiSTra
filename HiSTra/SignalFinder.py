@@ -129,7 +129,7 @@ def compare_evalue(test_evalue,control_evalue,chrname):
         
     for k in range(test_evalue.shape[0]):
         chr_i,chr_j = eigen_pos2chr_pos(k,eigen_pair_list)
-        print(f"debug!!!!{chr_i} {chr_j}.")
+    #    print(f"debug!!!!{chr_i} {chr_j}.")
         eigen_c = abs(test_evalue[k,:])[abs(test_evalue[k,:])>0.1]
         eigen_n = abs(control_evalue[k,:])[abs(control_evalue[k,:])>0.1]
         eigen_c_log = np.log(abs(test_evalue[k,:])[abs(test_evalue[k,:])>0.1])

@@ -142,11 +142,11 @@ def cool2mat(coolfile,matrix_path,sizes):
         cool500k = outdir500k+f'/{chri_pre}{chri}_{chrj_pre}{chrj}_{num2res_sim(res_low)}_ori.txt'
         cool100k = outdir100k+f'/{chri_pre}{chri}_{chrj_pre}{chrj}_{num2res_sim(res_high)}_ori.txt'
         
-        part1 = ' '.join([cooler,cool500k,"-r",f"{chri_pre}{chri}","-r2",f"{chri_pre}{chrj}","-m","--join",f"{coolfile}::resolutions/{res_low}"])
+        part1 = ' '.join([cooler,cool500k,"-r",f"{chri}","-r2",f"{chrj}","-m","--join",f"{coolfile}::resolutions/{res_low}"])
         part2 = f"&& cut -f 2,5,7 {cool500k}>{outdir500k}/{chri_pre}{chri}_{chri_pre}{chrj}{R500} && rm {cool500k}"
         command_500k = part1 + part2
         
-        part1 = ' '.join([cooler,cool100k,"-r",f"{chri_pre}{chri}","-r2",f"{chri_pre}{chrj}","-m","--join",f"{coolfile}::resolutions/{res_high}"])
+        part1 = ' '.join([cooler,cool100k,"-r",f"{chri}","-r2",f"{chrj}","-m","--join",f"{coolfile}::resolutions/{res_high}"])
         part2 = f"&& cut -f 2,5,7 {cool100k}>{outdir100k}/{chri_pre}{chri}_{chri_pre}{chrj}{R100} && rm {cool100k}" 
         command_100k = part1 + part2
         # print(command_100k)
