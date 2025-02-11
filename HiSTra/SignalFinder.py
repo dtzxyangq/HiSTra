@@ -53,6 +53,7 @@ def Eigen_calculation(path_in,k,sizes):
     
     resolution = [f"{num2res_sim(res_low)}",f"{num2res_sim(res_high)}"]
     for p,filename in enumerate(files): # filename format is *00k/chr1_chr2_*.txt
+        # print(filename) ## for test scHiC,10cell 发现问题：该矩阵为空或者只有一个元素
         M = sparse_matrix_in(os.path.join(path_in,filename), k, sizes) # float 乘法快！但是转化很慢。
         # M_noise = sparse.random(M.shape[0],M.shape[1],density =0.01,format='coo').toarray()*0.01
         # M = M + M_noise

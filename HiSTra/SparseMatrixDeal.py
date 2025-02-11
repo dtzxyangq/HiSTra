@@ -60,7 +60,8 @@ def sparse_matrix_in(matrix_file,k,sizes): #pandas 读入单个chri_chrj_100k.tx
         data = pd.read_csv(matrix_file,header=None,sep='\t')
         row = np.int64(data[0]/res_value[k])
         column = np.int64(data[1]/res_value[k])
-        weight = np.float64(data[2])
+        weight = np.float64(data[2].tolist())#debug 2025-2-11 添加.tolist()避免单一元素不形成列表从而下一步报错
+        # print(weight,row,column)# test for scHiC 10cell 1element
         sp = sparse.coo_matrix((weight,(row,column)),shape=(size_chr1,size_chr2))
     return sp.toarray()
 
